@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import configparser
 import os
 
 from aiogram import Bot, Dispatcher, Router
@@ -16,20 +15,20 @@ USER = os.getenv('USER')  # логин для прокси
 PASSWORD = os.getenv('PASSWORD')  # пароль для прокси
 PORT = os.getenv('PORT')  # порт для прокси
 IP = os.getenv('IP')  # IP для прокси
-
-OAuth = os.getenv('OAuth')
-
-config = configparser.ConfigParser(empty_lines_in_values=False, allow_no_value=True)
-# Считываем токен бота с файла config.ini
-config.read("scr/setting/config.ini")
-# bot_token = config.get('BOT_TOKEN', 'BOT_TOKEN')
-bot_token_2 = config.get('BOT_TOKEN', 'BOT_TOKEN_2')
-
-time_del = config.get('TIME_DEL', 'TIME_DEL')
+OAuth = os.getenv('OAuth')  # OAuth для прокси
 
 # === Телеграм (api_id и api_hash для управления аккаунтом) ===
-api_id = config.get('telegram_settings', 'id')
-api_hash = config.get('telegram_settings', 'hash')
+api_id = os.getenv('id')  # api_id
+api_hash = os.getenv('hash')  # api_hash
+
+bot_token_2 = os.getenv('BOT_TOKEN_2')  # Токен бота
+time_del = os.getenv('TIME_DEL')  # Время удаления сообщений
+
+# config = configparser.ConfigParser(empty_lines_in_values=False, allow_no_value=True)
+# Считываем токен бота с файла config.ini
+# config.read("scr/setting/config.ini")
+# bot_token_2 = config.get('BOT_TOKEN', 'BOT_TOKEN_2')
+# time_del = config.get('TIME_DEL', 'TIME_DEL')
 
 # === Права для чата ===
 READ_ONLY = ChatPermissions(can_send_messages=False)  # Запрещено писать в чат
