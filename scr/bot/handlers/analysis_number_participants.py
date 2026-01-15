@@ -3,27 +3,44 @@ from datetime import datetime
 
 from aiogram import types
 from aiogram.filters import Command
+from loguru import logger
 
 from scr.bot.system.dispatcher import bot, router
+from scr.utils.models import get_id_grup_for_administration
 
 
 @router.message(Command("count"))
 async def getCountMembers(message: types.Message):
-    chat_id = -1001488076358
+    try:
+        # chat_id = -1001488076358
+        user_id = message.from_user.id
 
-    # Получаем инфо о чате
-    chat = await bot.get_chat(chat_id)
+        list_id_grup = get_id_grup_for_administration(user_id=user_id)
+        logger.info(list_id_grup)
 
-    # Дата (в формате ДД.ММ.ГГГГ)
-    now = datetime.now().strftime("%d.%m.%Y")
+        for chat_id in list_id_grup:
+            # Преобразуем "голый" ID в ID супергруппы
+            if not str(chat_id).startswith('-100'):
+                # actual_chat_id = -10000000000000 + chat_id  # или проще: int(f"-100{chat_id}")
+                # Но безопаснее:
+                actual_chat_id = int(f"-100{chat_id}")
+            else:
+                actual_chat_id = chat_id
 
-    # Количество участников
-    count = await bot.get_chat_member_count(chat_id)
-    await message.answer(
-        f"📌 Название: {chat.title}\n"
-        f"👥 Количество участников: {count}\n"
-        f"🗓 Дата: {now}"
-    )
+            try:
+                chat = await bot.get_chat(chat_id=actual_chat_id)
+                count = await bot.get_chat_member_count(chat_id=actual_chat_id)
+                now = datetime.now().strftime("%d.%m.%Y")
+                await message.answer(
+                    f"📌 Название: {chat.title}\n"
+                    f"👥 Количество участников: {count}\n"
+                    f"🗓 Дата: {now}"
+                )
+            except Exception as e:
+                logger.error(f"Не удалось получить данные для чата {actual_chat_id}: {e}")
+                continue  # Пропускаем недоступные чаты
+    except Exception as e:
+        logger.exception(e)
 
 
 def register_getCountMembers_handlers():

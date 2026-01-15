@@ -1,10 +1,33 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+from loguru import logger
 from peewee import SqliteDatabase, Model, CharField, IntegerField
 
 # Настройка подключения к базе данных SQLite (или другой базы данных)
 db = SqliteDatabase(f"scr/database.db")
+
+
+def get_id_grup_for_administration(user_id):
+    """
+    Получает список chat_id групп, принадлежащих пользователю с заданным user_id.
+    :param user_id: ID пользователя Telegram, который запросил id групп, для дальнейшего получения численности
+                    участников групп / каналов, записанных в базу данных, через админ панель
+    :return: Список chat_id групп, принадлежащих пользователю
+    """
+    try:
+        logger.info(f"Получаем id групп для пользователя {user_id}")
+
+        # Выбираем только те группы, где user_id совпадает с переданным
+        query = Group.select(Group.chat_id).where(Group.user_id == user_id)
+        list_id_grup = [row.chat_id for row in query]
+
+        logger.info(f"Найдены группы для пользователя {user_id}: {list_id_grup}")
+        return list_id_grup
+
+    except Exception as e:
+        logger.exception(f"Ошибка при получении групп для пользователя {user_id}: {e}")
+        return []
 
 
 def get_privileged_users():
