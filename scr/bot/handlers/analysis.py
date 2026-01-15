@@ -3,7 +3,6 @@ import re
 
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import CallbackQuery
 from aiogram.types import Message
 from groq import Groq
@@ -12,6 +11,7 @@ from telethon import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
 
 from scr.YandexWordstatPy.yandex_wordstat_py import yandex_wordstat_py
+from scr.bot.states.states import AnalysisState
 from scr.bot.system.dispatcher import api_id, api_hash, GROQ_KEY, OAuth, SESSION_NAME, USER, PASSWORD, IP, PORT
 from scr.bot.system.dispatcher import router
 from scr.proxy.proxy import setup_proxy
@@ -65,10 +65,6 @@ async def get_data_sort(work: str) -> str:
     except Exception as e:
         logger.exception(e)
         return "⚠️ Ошибка при обращении к ИИ"
-
-
-class AnalysisState(StatesGroup):
-    link_post = State()
 
 
 def ai_text_to_list(text: str) -> list[str]:

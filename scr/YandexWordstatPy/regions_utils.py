@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 def pretty_regions(keyword: str, data: dict, region_names: dict) -> str:
     """
     Форматирует региональную статистику по ключевому слову для отображения в удобочитаемом виде.

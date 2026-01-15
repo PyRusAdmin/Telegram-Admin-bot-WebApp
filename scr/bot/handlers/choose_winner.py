@@ -1,10 +1,8 @@
+# -*- coding: utf-8 -*-
 import random
 import re
 
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import (
-    CallbackQuery
-)
+from aiogram.types import CallbackQuery
 from aiogram.types import Message
 from loguru import logger
 from telethon import TelegramClient
@@ -13,10 +11,6 @@ from telethon.tl.functions.channels import JoinChannelRequest
 from scr.bot.system.dispatcher import router, api_id, api_hash
 
 SESSION_NAME = "session_name_1"
-
-
-class ChooseWinnerState(StatesGroup):
-    waiting_for_link = State()
 
 
 @router.callback_query(lambda c: c.data == "choose_winner")
