@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}⚙️ Админ-панель{% endblock %}
+{% block content %}
+</br>
+<div id="usercard" class="user-info"></div>
+
+<div>
+    <p class="description">
+        Добро пожаловать в <strong>админ-панель управления ботом</strong>. Здесь
+        вы можете легко настраивать и поддерживать порядок в ваших группах и
+        каналах.
+    </p>
+    <ul class="features">
+        <li>
+            <strong>Удобное отображение количества участников:</strong> следите за
+            числом подписчиков.
+        </li>
+        <li>
+            <strong>Ограничения на сообщения:</strong> запрет на отправку
+            сообщений без подписки на канал.
+        </li>
+        <li>
+            <strong>Фильтрация запрещённых слов:</strong> предотвращайте спам.
+        </li>
+        <li>
+            <strong>Выдача особых прав:</strong> отдельные пользователи могут
+            обходить ограничения.
+        </li>
+    </ul>
+
+    Сделайте управление вашими чатами простым и эффективным. Настройки
+    помогут сохранить комфорт в любом сообществе.
+
+</div>
+<!-- Приветствие пользователей -->
+<script src="/scr/app/static/js/greeting-users.js"></script>
+<!--Получаем user id пользователя Telegram-->
+<script>
+    const tg = window.Telegram.WebApp;
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        tg.expand();
+        tg.BackButton.show();
+
+        tg.BackButton.onClick(() => {
+            tg.expand();
+            setTimeout(() => window.history.back(), 0);
+        });
+
+        const user = tg.initDataUnsafe?.user || {};
+        const user_id = user.id;
+
+        // Если нужно использовать user_id глобально, сделайте его глобальным
+        window.TELEGRAM_USER_ID = user_id;
+    });
+</script>
+
+{% endblock %}

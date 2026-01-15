@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}PyAdminRU{% endblock %}</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Правильный способ подключения CSS -->
+    <link rel="stylesheet" href="/scr/app/static/css/styless-burger-menu.css"/>
+    <!-- Футер -->
+    <link rel="stylesheet" href="/scr/app/static/css/footer-styles.css"/>
+    <!-- Стиль -->
+    <link rel="stylesheet" href="/scr/app/static/css/styles.css"/>
+</head>
+
+<body>
+<script src="/scr/app/static/js/back_button.js" defer></script>
+<div class="header-banner">
+    <div class="burger-menu-icon" id="burgerMenuIcon">&#9776;</div>
+</div>
+
+<div class="burger-menu" id="burgerMenu">
+    <ul>
+        <li><a href="/formation-groups">👥 Формирование групп</a></li>
+        <li><a href="/restrictions_on_messages">👤 Количество участников</a></li>
+        <li><a href="/restrictions_messages">✉️ Ограничения на сообщения</a></li>
+        <li><a href="/channel_subscription_limit">📢 Ограничение по подписке на канал</a></li>
+        <!--        <li><a href="/filter_words">🚫 Фильтр запрещённых слов</a></li>-->
+        <li><a href="/grant_user_special_rights_group">🔒 Выдать пользователю особые права</a></li>
+        <li><a href="/add_groups_for_tracking">🔍 Добавить группы / каналы</a></li>
+        <li><a href="/help">❓ Помощь</a></li>
+    </ul>
+</div>
+
+<!-- Основное содержимое страницы -->
+<div class="container">
+    {% block content %}
+    {% endblock %}
+</div>
+
+<footer>
+    <a href="/privacy_policy">Политика конфиденциальности</a>
+    <a href="/terms_of_use">Условия использования</a>
+    <a href="https://t.me/PyAdminRU" target="_blank">Telegram</a>
+    <a href="https://t.me/master_tg_d" target="_blank">Telegram канал</a>
+    <hr/>
+    <div class="social-icons">
+        <a href="https://t.me/PyAdminRU" target="_blank">&#x2709;&#xFE0F;</a>
+        <a href="https://t.me/master_tg_d" target="_blank">&#x1F4AC;</a>
+    </div>
+    &copy; 2025 PyAdminRU. Все права защищены.
+</footer>
+
+<!-- Приветствие пользователей -->
+<script src="/scr/app/static/js/greeting-users.js"></script>
+<!-- Открытие бургер меню -->
+<script src="/scr/app/static/js/burger.js"></script>
+<!-- Осносная логика проекта -->
+<script src="/scr/app/static/js/admin.js"></script>
+</body>
+
+</html>

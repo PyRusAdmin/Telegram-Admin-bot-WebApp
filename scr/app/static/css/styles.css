@@ -1,0 +1,165 @@
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --hover-color: #2980b9;
+    --text-color: #333;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Базовые стили */
+body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-color);
+    margin: 0;
+    background-color: #f9f9f9;
+}
+
+/* Контейнер */
+.container {
+    padding: 20px;
+}
+
+/* Ограничитель ширины формы */
+.form-wrapper {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Заголовок / баннер */
+.header-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 48px;
+    background-color: #333;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 999;
+    box-sizing: border-box;
+}
+
+/* Описание */
+.description {
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Секции */
+.section {
+    margin-bottom: 25px;
+}
+
+/* Список фич */
+.features {
+    list-style: none;
+    padding-left: 0;
+    margin: 30px 0;
+    color: #555;
+}
+
+.features li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+}
+
+.features li::before {
+    content: "✔️";
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: var(--secondary-color);
+}
+
+/* Метки */
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Инпуты, textarea, select */
+input[type="text"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--secondary-color);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    transition: border-color 0.3s ease;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+}
+
+/* Кнопки */
+button {
+    display: inline-block;
+    width: 100%;
+    padding: 10px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+/* Зелёная кнопка-ссылка */
+.link-button {
+    display: inline-block;
+    width: 100%;
+    padding: 10px 20px;
+    margin-top: 10px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    background-color: #28a745;
+    color: white;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+/* Иконки соцсетей */
+.social-icons a:hover {
+    color: var(--hover-color);
+}
+
+/* Сообщения об успехе и ошибках */
+.success {
+    background-color: #d4edda;
+    color: #155724;
+    border-left: 4px solid #155724;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #721c24;
+}
+
+/* Статус */
+.status {
+    margin-top: 10px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}

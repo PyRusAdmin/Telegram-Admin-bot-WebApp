@@ -1,0 +1,38 @@
+.burger-menu-icon {
+    cursor: pointer;
+    font-size: 30px;
+    color: white;
+}
+
+.burger-menu {
+    position: fixed;
+    top: 48px;
+    left: -250px;
+    width: 250px;
+    height: calc(100vh - 48px);
+    background-color: #333;
+    transition: left 0.3s ease;
+    z-index: 998;
+    overflow-y: auto;
+}
+
+.burger-menu.open {
+    left: 0;
+}
+
+.burger-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0 0;
+}
+
+.burger-menu ul li {
+    padding: 10px;
+    border-bottom: 1px solid #444;
+}
+
+.burger-menu ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+}

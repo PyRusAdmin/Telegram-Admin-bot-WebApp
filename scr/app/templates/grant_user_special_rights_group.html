@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}🔒 Выдать пользователю особые права{% endblock %}
+{% block content %}
+</br>
+<h3>🔒 Выдать пользователю особые права</h3>
+
+<!-- Выдать пользователю особые права в группе -->
+<label for="groups-select-privilage">Выберите группу в которой нужнодать особые права:</label>
+<select id="groups-select-privilage">
+    <option value="">-- Выберите группу --</option>
+</select>
+
+<label for="user-id-privilege">Введите id пользователя. Что бы получить id пользователя, можете
+    ответить на сообщение в группе / чате с ботом, командой /id. Бот
+    отправит id в личное сообщение бота:</label>
+<textarea id="user-id-privilege" rows="4" placeholder="Пример: 123456789"></textarea>
+
+
+<!-- Скрытое поле для ID текущего пользователя Telegram -->
+<input type="hidden" id="user-id-field">
+
+
+<br><br>
+<button onclick="givePrivilege()">Дать особые права</button>
+<a href="/" class="btn">Назад в админ-панель</a>
+
+
+<script>
+    const tg = window.Telegram.WebApp;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        tg.expand();
+        tg.BackButton.show();
+
+        tg.BackButton.onClick(() => {
+            tg.expand();
+            setTimeout(() => window.history.back(), 0);
+        });
+
+        const user = tg.initDataUnsafe?.user || {};
+        const user_id = user.id;
+
+        if (!user_id) {
+            console.error("user_id не получен из Telegram WebApp");
+            return;
+        }
+
+        // Устанавливаем user_id в скрытое поле формы
+        const hiddenField = document.getElementById("user-id-field");
+        if (hiddenField) hiddenField.value = user_id;
+
+        // Используем user_id глобально (если нужно)
+        window.TELEGRAM_USER_ID = user_id;
+
+        // Загружаем список групп пользователя
+        populateSelect(`/chat_title?user_id=${user_id}`, "groups-select-privilage");
+    });
+
+    // Функция заполнения выпадающего списка групп
+    async function populateSelect(url, selectId) {
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            const select = document.getElementById(selectId);
+            if (!select) return;
+
+            data.groups.forEach((group) => {
+                const option = document.createElement("option");
+                option.value = group;
+                option.textContent = group;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Ошибка при загрузке групп:", error);
+        }
+    }
+
+    // Функция выдачи прав
+    async function givePrivilege() {
+        const chat_title = document.getElementById("groups-select-privilage").value.trim();
+        const user_id = document.getElementById("user-id-privilege").value.trim();
+
+        if (!chat_title || !user_id) {
+            alert("Заполните все поля");
+            return;
+        }
+
+        try {
+            const body = new URLSearchParams({
+                chat_title: chat_title,
+                user_id: user_id,
+            });
+
+            const response = await fetch("give-privileges", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: body.toString(),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(result.message || "Права успешно выданы");
+            } else {
+                alert("Ошибка: " + (result.error || "Неизвестная ошибка"));
+            }
+        } catch (err) {
+            console.error("Ошибка сети:", err);
+            alert("Не удалось выполнить запрос");
+        }
+    }
+</script>
+
+
+{% endblock %}

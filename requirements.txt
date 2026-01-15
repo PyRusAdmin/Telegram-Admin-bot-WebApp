@@ -1,0 +1,14 @@
+aiogram~=3.21.0
+configparser~=7.2.0
+fastapi~=0.115.13
+loguru~=0.7.3
+peewee~=3.17.9
+PyYAML~=6.0.2
+Telethon~=1.40.0
+uvicorn~=0.34.3
+starlette~=0.46.2
+pathlib~=1.0.1
+dotenv~=0.9.9
+python-dotenv~=1.0.1
+groq~=0.29.0
+requests~=2.32.3
