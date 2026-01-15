@@ -3,6 +3,11 @@ import os
 import subprocess
 import sys
 
+from loguru import logger
+
+# Настройка логирования: указываем файл, размер ротации и сжатие
+logger.add("scr/log/log.log", rotation="1 MB", compression="zip")
+
 # Путь к корню проекта (где находится scr/)
 project_root = os.path.dirname(os.path.abspath(__file__))
 
