@@ -7,6 +7,26 @@ from peewee import SqliteDatabase, Model, CharField, IntegerField
 # Настройка подключения к базе данных SQLite (или другой базы данных)
 db = SqliteDatabase(f"scr/database.db")
 
+def get_chat_link_by_chat_id(chat_id: int, user_id: int) -> str | None:
+    """
+    Получает chat_link из таблицы groups_administration по chat_id и user_id.
+
+    :param chat_id: ID чата (может быть "голым", например 2466575909)
+    :param user_id: ID пользователя Telegram
+    :return: Ссылка на чат (например, 'https://t.me/my_channel') или None, если не найдено
+    """
+    try:
+        group = Group.get(
+            (Group.chat_id == chat_id) &
+            (Group.user_id == user_id)
+        )
+        return group.chat_link
+    except Group.DoesNotExist:
+        logger.warning(f"Не найдена запись для chat_id={chat_id}, user_id={user_id}")
+        return None
+    except Exception as e:
+        logger.exception(f"Ошибка при получении chat_link для chat_id={chat_id}: {e}")
+        return None
 
 def get_id_grup_for_administration(user_id):
     """

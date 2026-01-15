@@ -7,7 +7,7 @@ from aiogram.filters import Command
 from loguru import logger
 
 from scr.bot.system.dispatcher import bot, router
-from scr.utils.models import get_id_grup_for_administration
+from scr.utils.models import get_id_grup_for_administration, get_chat_link_by_chat_id
 
 
 @router.message(Command("count"))
@@ -33,20 +33,18 @@ async def getCountMembers(message: types.Message):
                 await message.answer(
                     f"📌 Название: {chat.title}\n"
                     f"👥 Количество участников: {count}\n"
-                    f"🗓 Дата: {now}"
                 )
             except TelegramBadRequest:
-                # chat = await bot.get_chat(chat_id=chat_id)
-                # count = await bot.get_chat_member_count(chat_id=chat_id)
                 now = datetime.now().strftime("%d.%m.%Y")
+                # display_name = f"@{username}" if username else title
+
+                display_name = get_chat_link_by_chat_id(chat_id, user_id)
+
                 await message.answer(
-                    f"Бот не состоит в чате ID: {chat_id}\n"
-                    # f"👥 Количество участников: {count}\n"
-                    f"🗓 Дата: {now}"
+                    f"⚠️ Бот не состоит в {display_name}\n"
+                    f"ID: {chat_id}\n"
+                    "Добавьте бота в чат как администратора."
                 )
-            # except Exception as e:
-            #     logger.error(f"Не удалось получить данные для чата {actual_chat_id}: {e}")
-            #     continue  # Пропускаем недоступные чаты
 
     except Exception as e:
         logger.exception(e)
