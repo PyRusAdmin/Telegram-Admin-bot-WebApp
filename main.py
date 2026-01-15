@@ -10,7 +10,6 @@ project_root = os.path.dirname(os.path.abspath(__file__))
 commands = [
     [sys.executable, "scr/app/app.py"],  # запускает приложение
     [sys.executable, "scr/bot/bot.py"],  # запускает бота
-    [sys.executable, "scr/parser/parser.py"],  # запускает парсер и сервера
     [
         "tuna",
         "http",
