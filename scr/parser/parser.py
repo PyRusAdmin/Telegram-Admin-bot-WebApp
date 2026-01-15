@@ -22,60 +22,69 @@ forwarded_messages = set()
 
 
 async def process_message(client, message: Message, chat_id: int):
-    if not message.message:
-        return
+    try:
+        if not message.message:
+            return
 
-    message_text = message.message.lower()
-    msg_key = f"{chat_id}-{message.id}"
+        message_text = message.message.lower()
+        msg_key = f"{chat_id}-{message.id}"
 
-    if msg_key in forwarded_messages:
-        return
+        if msg_key in forwarded_messages:
+            return
 
-    if any(keyword in message_text for keyword in CONFIG["keywords"]):
-        logger.info(f"📌 Найдено совпадение. Пересылаю сообщение ID={message.id}")
-        try:
-            await client.forward_messages(CONFIG["target_channel_id"], message)
-            forwarded_messages.add(msg_key)
-        except Exception as e:
-            logger.exception(f"❌ Ошибка при пересылке: {e}")
+        if any(keyword in message_text for keyword in CONFIG["keywords"]):
+            logger.info(f"📌 Найдено совпадение. Пересылаю сообщение ID={message.id}")
+            try:
+                await client.forward_messages(CONFIG["target_channel_id"], message)
+                forwarded_messages.add(msg_key)
+            except Exception as e:
+                logger.exception(f"❌ Ошибка при пересылке: {e}")
+    except Exception as e:
+        logger.exception(e)
 
 
 async def join_required_channels(client: TelegramClient):
     # Получаем все username из базы данных
-    channels = [group.username_chat_channel for group in Groups.select()]
+    try:
+        channels = [group.username_chat_channel for group in Groups.select()]
 
-    for channel in channels:
-        try:
-            logger.info(f"🔗 Пробую подписаться на {channel}...")
-            await client(JoinChannelRequest(channel))
-            logger.success(f"✅ Подписка на {channel} выполнена")
-        except UserAlreadyParticipantError:
-            logger.info(f"ℹ️ Уже подписан на {channel}")
-        except Exception as e:
-            logger.exception(f"❌ Не удалось подписаться на {channel}: {e}")
+        for channel in channels:
+            try:
+                logger.info(f"🔗 Пробую подписаться на {channel}...")
+                await client(JoinChannelRequest(channel))
+                logger.success(f"✅ Подписка на {channel} выполнена")
+            except UserAlreadyParticipantError:
+                logger.info(f"ℹ️ Уже подписан на {channel}")
+            except Exception as e:
+                logger.exception(f"❌ Не удалось подписаться на {channel}: {e}")
+    except Exception as e:
+        logger.exception(e)
 
 
 async def filter_messages():
-    logger.info("🚀 Запуск бота...")
-
-    client = TelegramClient(CONFIG["session_name"], api_id, api_hash)
-    await client.connect()
-
-    await join_required_channels(client)
-
-    # Получаем список username из базы данных
-    channels = [group.username_chat_channel for group in Groups.select()]
-
-    @client.on(events.NewMessage(chats=channels))
-    async def handle_new_message(event: events.NewMessage.Event):
-        await process_message(client, event.message, event.chat_id)
-
-    logger.info("👂 Бот слушает новые сообщения...")
     try:
-        await client.run_until_disconnected()
-    finally:
-        await client.disconnect()
-        logger.info("🛑 Бот остановлен.")
+        logger.info("🚀 Запуск бота...")
+
+        client = TelegramClient(CONFIG["session_name"], api_id, api_hash)
+        await client.connect()
+
+        await join_required_channels(client)
+
+        # Получаем список username из базы данных
+        channels = [group.username_chat_channel for group in Groups.select()]
+
+        @client.on(events.NewMessage(chats=channels))
+        async def handle_new_message(event: events.NewMessage.Event):
+            await process_message(client, event.message, event.chat_id)
+
+        logger.info("👂 Бот слушает новые сообщения...")
+        try:
+            await client.run_until_disconnected()
+        finally:
+            await client.disconnect()
+            logger.info("🛑 Бот остановлен.")
+    except Exception as e:
+        logger.exception(e)
 
 
 def parser():
@@ -83,6 +92,8 @@ def parser():
         asyncio.run(filter_messages())
     except KeyboardInterrupt:
         logger.warning("🧹 Остановка по Ctrl+C")
+    except Exception as e:
+        logger.exception(e)
 
 
 if __name__ == "__main__":
