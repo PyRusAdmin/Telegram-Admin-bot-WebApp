@@ -18,11 +18,13 @@ async def getCountMembers(message: types.Message):
         logger.info(list_id_grup)
 
         for chat_id in list_id_grup:
+
             # Преобразуем "голый" ID в ID супергруппы
             if not str(chat_id).startswith('-100'):
                 actual_chat_id = int(f"-100{chat_id}")
             else:
                 actual_chat_id = chat_id
+
             try:
                 chat = await bot.get_chat(chat_id=actual_chat_id)
                 count = await bot.get_chat_member_count(chat_id=actual_chat_id)

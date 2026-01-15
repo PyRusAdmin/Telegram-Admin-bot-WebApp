@@ -84,7 +84,6 @@ async def formation_groups(request: Request):
     """
     Отображение страницы с формой для ввода username группы.
 
-    :param user_id: ID пользователя, который добавляет группу.
     :param request: Объект запроса.
     :return: HTML-страница с формой для ввода username группы.
     """
@@ -188,7 +187,6 @@ async def save_group(chat_username: str = Form(...), user_id: int = Form(...)): 
         with db.atomic():
             # Вставляем новую
             Group.insert(
-
                 chat_id=chat_id,
                 chat_title=chat_title,
                 chat_total=chat_total,
