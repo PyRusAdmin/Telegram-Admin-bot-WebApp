@@ -2,6 +2,7 @@
 from datetime import datetime
 
 from aiogram import types
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from loguru import logger
 
@@ -34,9 +35,19 @@ async def getCountMembers(message: types.Message):
                     f"👥 Количество участников: {count}\n"
                     f"🗓 Дата: {now}"
                 )
-            except Exception as e:
-                logger.error(f"Не удалось получить данные для чата {actual_chat_id}: {e}")
-                continue  # Пропускаем недоступные чаты
+            except TelegramBadRequest:
+                # chat = await bot.get_chat(chat_id=chat_id)
+                # count = await bot.get_chat_member_count(chat_id=chat_id)
+                now = datetime.now().strftime("%d.%m.%Y")
+                await message.answer(
+                    f"Бот не состоит в чате ID: {chat_id}\n"
+                    # f"👥 Количество участников: {count}\n"
+                    f"🗓 Дата: {now}"
+                )
+            # except Exception as e:
+            #     logger.error(f"Не удалось получить данные для чата {actual_chat_id}: {e}")
+            #     continue  # Пропускаем недоступные чаты
+
     except Exception as e:
         logger.exception(e)
 
