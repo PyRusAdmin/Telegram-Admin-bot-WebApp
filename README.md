@@ -69,7 +69,7 @@ hash = hash для аккаунта
 4. Запуск проекта:
 
 ```bash
-python run_all.py
+python main.py
 ```
 
 Или:
