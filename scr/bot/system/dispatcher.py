@@ -24,12 +24,6 @@ api_hash = os.getenv('hash')  # api_hash
 bot_token_2 = os.getenv('BOT_TOKEN_2')  # Токен бота
 time_del = os.getenv('TIME_DEL')  # Время удаления сообщений
 
-# config = configparser.ConfigParser(empty_lines_in_values=False, allow_no_value=True)
-# Считываем токен бота с файла config.ini
-# config.read("scr/setting/config.ini")
-# bot_token_2 = config.get('BOT_TOKEN', 'BOT_TOKEN_2')
-# time_del = config.get('TIME_DEL', 'TIME_DEL')
-
 # === Права для чата ===
 READ_ONLY = ChatPermissions(can_send_messages=False)  # Запрещено писать в чат
 FULL_ACCESS = ChatPermissions(can_send_messages=True)  # Разрешено писать в чат
