@@ -5,19 +5,19 @@ function populateSelect(url, selectId) {
     fetch(url)
         .then((response) => response.json())
         .then((data) => {
-        const select = document.getElementById(selectId);
-        select.innerHTML = '<option value="">-- Выберите группу --</option>';
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">-- Выберите группу --</option>';
 
-        // Проверяем, есть ли нужный ключ
-        const groups = data.chat_title || data.groups || [];
+            // Проверяем, есть ли нужный ключ
+            const groups = data.chat_title || data.groups || [];
 
-        groups.forEach((group) => {
-            const option = document.createElement("option");
-            option.value = group.chat_title;
-            option.textContent = group.chat_title;
-            select.appendChild(option);
-        });
-    })
+            groups.forEach((group) => {
+                const option = document.createElement("option");
+                option.value = group.chat_title;
+                option.textContent = group.chat_title;
+                select.appendChild(option);
+            });
+        })
         .catch((err) => console.error(`Ошибка загрузки ${selectId}:`, err));
 }
 
@@ -57,7 +57,7 @@ async function getParticipants() {
         }
     } catch (error) {
         document.getElementById("participants-count").innerText =
-        "Не удалось получить количество участников";
+            "Не удалось получить количество участников";
         document.getElementById("participants-count").className = "status error";
     }
 }

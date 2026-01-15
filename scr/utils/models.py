@@ -185,6 +185,7 @@ class BotUsers(Model):
         database = db
         table_name = "bot_users"
 
+
 async def save_bot_user(message):
     """
     Сохраняет или обновляет данные о пользователе, который запустил бота.
@@ -225,6 +226,7 @@ async def save_bot_user(message):
 
     except Exception as e:
         print(f"❌ Ошибка при сохранении пользователя: {e}")
+
 
 def initialize_db():
     """

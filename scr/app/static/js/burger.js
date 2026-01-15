@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
     const burgerMenuIcon = document.getElementById("burgerMenuIcon");
     const burgerMenu = document.getElementById("burgerMenu");
 
