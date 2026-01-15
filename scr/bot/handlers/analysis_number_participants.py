@@ -12,8 +12,7 @@ from scr.utils.models import get_id_grup_for_administration
 @router.message(Command("count"))
 async def getCountMembers(message: types.Message):
     try:
-        # chat_id = -1001488076358
-        user_id = message.from_user.id
+        user_id = message.from_user.id  # Получаем ID пользователя
 
         list_id_grup = get_id_grup_for_administration(user_id=user_id)
         logger.info(list_id_grup)
@@ -21,12 +20,9 @@ async def getCountMembers(message: types.Message):
         for chat_id in list_id_grup:
             # Преобразуем "голый" ID в ID супергруппы
             if not str(chat_id).startswith('-100'):
-                # actual_chat_id = -10000000000000 + chat_id  # или проще: int(f"-100{chat_id}")
-                # Но безопаснее:
                 actual_chat_id = int(f"-100{chat_id}")
             else:
                 actual_chat_id = chat_id
-
             try:
                 chat = await bot.get_chat(chat_id=actual_chat_id)
                 count = await bot.get_chat_member_count(chat_id=actual_chat_id)
