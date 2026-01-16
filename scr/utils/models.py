@@ -2,10 +2,19 @@
 from datetime import datetime
 
 from loguru import logger
-from peewee import SqliteDatabase, Model, CharField, IntegerField
+from peewee import SqliteDatabase, Model, CharField, IntegerField, BigIntegerField, DateTimeField
 
 # Настройка подключения к базе данных SQLite (или другой базы данных)
 db = SqliteDatabase(f"scr/database.db")
+
+
+class BannedUser(Model):
+    user_id = BigIntegerField(unique=True)  # Telegram ID может быть большим
+    created_at = DateTimeField(default=datetime.datetime.now)
+
+    class Meta:
+        database = db  # замените `db` на ваш экземпляр базы данных
+
 
 def get_chat_link_by_chat_id(chat_id: int, user_id: int) -> str | None:
     """
@@ -27,6 +36,7 @@ def get_chat_link_by_chat_id(chat_id: int, user_id: int) -> str | None:
     except Exception as e:
         logger.exception(f"Ошибка при получении chat_link для chat_id={chat_id}: {e}")
         return None
+
 
 def get_id_grup_for_administration(user_id):
     """
@@ -268,6 +278,7 @@ def initialize_db():
     db.create_tables([GroupRestrictions], safe=True)
     db.create_tables([BadWords], safe=True)
     db.create_tables([BotUsers], safe=True)
+    db.create_tables([BannedUser], safe=True)  # Создание таблицы BannedUser для бана пользователей
 
     db.close()
 
