@@ -6,13 +6,14 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters.chat_member_updated import ChatMemberUpdatedFilter, JOIN_TRANSITION
 from aiogram.types import Message, ChatMemberUpdated, ChatPermissions
 from loguru import logger
+from peewee import DoesNotExist
 
 from scr.bot.keyboard.keyboard import create_admin_panel_keyboard
 from scr.bot.messages.translations_loader import translations
 from scr.bot.system.dispatcher import bot
 from scr.bot.system.dispatcher import router
 from scr.bot.system.dispatcher import time_del
-from scr.utils.models import BadWords, get_privileged_users, save_bot_user
+from scr.utils.models import BadWords, get_privileged_users, save_bot_user, BannedUser
 from scr.utils.models import GroupRestrictions
 
 
@@ -30,6 +31,33 @@ async def unified_message_handler(message: Message) -> None:
     chat_id = message.chat.id
     user_id = message.from_user.id
     logger.debug(f"chat_id: {chat_id}, user_id: {user_id}")
+
+    # Проверяем, есть ли пользователь в списке заблокированных
+    try:
+        BannedUser.get(BannedUser.user_id == user_id)
+        # Пользователь найден — применяем ограничения
+        permissions = ChatPermissions(
+            can_send_messages=False,
+            can_send_media_messages=False,
+            can_send_other_messages=False,
+            can_add_web_page_previews=False,
+        )
+        await bot.restrict_chat_member(
+            chat_id=message.chat.id,
+            user_id=user_id,
+            permissions=permissions
+        )
+        # Удаляем сообщение
+        await message.delete()
+        # Опционально: отправить уведомление (лучше в личку или лог-канал)
+        # await bot.send_message(user_id, "Вы ограничены в этой группе за нарушение правил.")
+    except DoesNotExist:
+        # Пользователь не заблокирован — ничего не делаем
+        pass
+    except Exception as e:
+        # Например, бот не может ограничить админа — пропускаем
+        # В продакшене: залогируйте ошибку
+        pass
 
     # Преобразуем в строку и убираем -100
     normalized_chat_id = int(str(chat_id).replace("-100", ""))

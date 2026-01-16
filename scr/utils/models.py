@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
+
 from datetime import datetime
 
 from loguru import logger
-from peewee import SqliteDatabase, Model, CharField, IntegerField, BigIntegerField, DateTimeField
+from peewee import SqliteDatabase, Model, CharField, IntegerField, DateTimeField
 
 # Настройка подключения к базе данных SQLite (или другой базы данных)
 db = SqliteDatabase(f"scr/database.db")
 
 
 class BannedUser(Model):
-    user_id = BigIntegerField(unique=True)  # Telegram ID может быть большим
-    created_at = DateTimeField(default=datetime.datetime.now)
+    user_id = IntegerField()
+    created_at = DateTimeField(default=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))  # ✅ теперь работает
 
     class Meta:
-        database = db  # замените `db` на ваш экземпляр базы данных
+        database = db  # ваш экземпляр базы
 
 
 def get_chat_link_by_chat_id(chat_id: int, user_id: int) -> str | None:

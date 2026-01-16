@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from aiogram import types
 from aiogram.filters import Command
 
