@@ -3,10 +3,47 @@
 from datetime import datetime
 
 from loguru import logger
-from peewee import SqliteDatabase, Model, CharField, IntegerField, DateTimeField
+from peewee import SqliteDatabase, Model, CharField, IntegerField, DateTimeField, TextField
 
 # Настройка подключения к базе данных SQLite (или другой базы данных)
 db = SqliteDatabase(f"scr/database.db")
+
+
+class SpamLog(Model):
+    """
+    Логирует случаи спама: кто, где и когда нарушил правила.
+    """
+    user_id = IntegerField()  # ID нарушителя
+    chat_id = IntegerField()  # ID группы, где произошло нарушение
+    chat_title = CharField(null=True)  # Название группы (опционально)
+    violation_type = CharField()  # Тип нарушения: 'forward', 'bad_word', 'url'
+    message_text = TextField(null=True)  # Текст сообщения (если есть)
+    detected_at = DateTimeField(default=datetime.now)
+
+    class Meta:
+        database = db
+        table_name = "spam_log"
+
+
+def log_spam(
+        user_id: int,
+        chat_id: int,
+        chat_title: str | None,
+        violation_type: str,
+        message_text: str | None = None
+):
+    """Сохраняет запись о спаме в базу данных."""
+    try:
+        SpamLog.create(
+            user_id=user_id,
+            chat_id=chat_id,
+            chat_title=chat_title,
+            violation_type=violation_type,
+            message_text=message_text[:1000] if message_text else None  # ограничим длину
+        )
+        logger.info(f"Записан спам от {user_id} в чате {chat_id}, тип: {violation_type}")
+    except Exception as e:
+        logger.exception(f"Ошибка при логировании спама: {e}")
 
 
 class BannedUser(Model):
@@ -280,6 +317,8 @@ def initialize_db():
     db.create_tables([BadWords], safe=True)
     db.create_tables([BotUsers], safe=True)
     db.create_tables([BannedUser], safe=True)  # Создание таблицы BannedUser для бана пользователей
+
+    db.create_tables([SpamLog], safe=True)  # Записываем в таблицу спамеров
 
     db.close()
 

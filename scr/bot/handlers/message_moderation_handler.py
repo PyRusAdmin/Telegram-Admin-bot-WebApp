@@ -13,7 +13,7 @@ from scr.bot.messages.translations_loader import translations
 from scr.bot.system.dispatcher import bot
 from scr.bot.system.dispatcher import router
 from scr.bot.system.dispatcher import time_del
-from scr.utils.models import BadWords, get_privileged_users, save_bot_user, BannedUser
+from scr.utils.models import BadWords, get_privileged_users, save_bot_user, BannedUser, log_spam
 from scr.utils.models import GroupRestrictions
 
 
@@ -35,6 +35,16 @@ async def unified_message_handler(message: Message) -> None:
     # Проверяем, есть ли пользователь в списке заблокированных
     try:
         BannedUser.get(BannedUser.user_id == user_id)
+
+        # 🔥 ЛОГИРУЕМ как спамера
+        log_spam(
+            user_id=user_id,
+            chat_id=chat_id,
+            chat_title=message.chat.title,
+            violation_type="banned_user",  # или "blacklisted_user"
+            message_text=message.text if message.text else None
+        )
+
         # Пользователь найден — применяем ограничения
         permissions = ChatPermissions(
             can_send_messages=False,
