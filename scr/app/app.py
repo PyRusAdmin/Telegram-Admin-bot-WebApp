@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from pathlib import Path
 
 import uvicorn
@@ -12,11 +13,27 @@ from fastapi.templating import Jinja2Templates
 from loguru import logger
 from starlette.responses import JSONResponse
 
-from scr.bot.system.dispatcher import bot, READ_ONLY, FULL_ACCESS
+from scr.bot.system.dispatcher import READ_ONLY, FULL_ACCESS
 from scr.utils.get_id import get_participants_count
 from scr.utils.models import BadWords, PrivilegedUsers, Groups
 from scr.utils.models import Group, db
 from scr.utils.models import GroupRestrictions
+
+# Глобальная переменная для бота (устанавливается при запуске)
+_bot = None
+
+
+def set_bot(bot):
+    """Установка бота для FastAPI приложения"""
+    global _bot
+    _bot = bot
+
+
+def get_bot():
+    """Получение бота"""
+    if _bot is None:
+        raise RuntimeError("Бот не инициализирован")
+    return _bot
 
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent
@@ -297,7 +314,7 @@ async def chat_readonly(chat_id: int):
     """
     try:
         chat_id = str(f"-100{chat_id}")
-        await bot.set_chat_permissions(chat_id=int(chat_id), permissions=READ_ONLY)
+        await get_bot().set_chat_permissions(chat_id=int(chat_id), permissions=READ_ONLY)
         return {"success": True, "message": "Чат переведён в режим «только чтение»"}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -313,7 +330,7 @@ async def chat_writeable(chat_id: int):
     """
     try:
         chat_id = str(f"-100{chat_id}")
-        await bot.set_chat_permissions(chat_id=chat_id, permissions=FULL_ACCESS)
+        await get_bot().set_chat_permissions(chat_id=chat_id, permissions=FULL_ACCESS)
         return {"success": True, "message": "Чат переведён в режим «все могут писать»"}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -426,4 +443,28 @@ async def chat_subscribe(chat_title: str, required_chat_title: str):
 
 
 if __name__ == "__main__":
+    # Инициализируем бота для работы API
+    import aiohttp
+    from aiogram import Bot
+    from aiogram.client.default import DefaultBotProperties
+    from aiogram.client.session.aiohttp import AiohttpSession
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    bot_token = os.getenv('BOT_TOKEN_2')
+    USER = os.getenv('USER')
+    PASSWORD = os.getenv('PASSWORD')
+    IP = os.getenv('IP')
+    PORT = os.getenv('PORT')
+
+    # Настройка прокси
+    from scr.proxy.proxy import setup_proxy
+    setup_proxy(USER, PASSWORD, IP, PORT)
+
+    # Создаём сессию (прокси через переменные окружения)
+    session = AiohttpSession()
+    bot = Bot(token=bot_token, default=DefaultBotProperties(), session=session)
+
+    set_bot(bot)
+
     uvicorn.run("app:app", host="127.0.0.1", port=8080, reload=True)

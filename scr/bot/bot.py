@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import asyncio
 
-import aiohttp
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
@@ -28,19 +27,17 @@ async def main():
     Главная асинхронная функция для запуска бота.
     Здесь инициализируются обработчики команд и запускается polling.
     """
-    try:
-        # Настройка прокси для ОС
-        setup_proxy(USER, PASSWORD, IP, PORT)
+    # Настройка прокси для ОС и aiohttp
+    setup_proxy(USER, PASSWORD, IP, PORT)
 
-        # Создание сессии с прокси для aiogram
-        proxy_url = f"http://{USER}:{PASSWORD}@{IP}:{PORT}" if all([USER, PASSWORD, IP, PORT]) else None
-        connector = aiohttp.TCPConnector(ssl=False)
-        session = aiohttp.ClientSession(connector=connector, proxy=proxy_url) if proxy_url else aiohttp.ClientSession(connector=connector)
+    try:
+        # Создаём сессию без явного прокси (прокси работает через переменные окружения)
+        session = AiohttpSession()
 
         bot = Bot(
             token=bot_token_2,
             default=DefaultBotProperties(),
-            session=AiohttpSession(session=session)
+            session=session
         )
 
         logger.info("Бот запущен")
