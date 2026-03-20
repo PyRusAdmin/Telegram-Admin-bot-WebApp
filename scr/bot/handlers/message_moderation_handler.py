@@ -110,6 +110,9 @@ async def unified_message_handler(message: Message) -> None:
                     )
                     await asyncio.create_task(delete_message_after_delay(bot_message, 60))
                     return
+        except TelegramBadRequest:
+            logger.error("Сообщение было удалено ранее")
+
         except Exception as e:
             logger.exception(f"Ошибка при проверке подписки: {e}")
             await message.delete()
