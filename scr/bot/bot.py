@@ -10,7 +10,8 @@ from scr.bot.handlers.choose_winner import register_choose_winer_handler
 from scr.bot.handlers.member import register_member_handlers
 from scr.bot.handlers.message_moderation import register_get_id_ban
 from scr.bot.handlers.message_moderation_handler import register_subscription_handlers
-from scr.bot.system.dispatcher import bot, dp
+from scr.bot.system.dispatcher import bot, dp, USER, PASSWORD, IP, PORT
+from scr.proxy.proxy import setup_proxy
 
 
 async def main():
@@ -19,6 +20,7 @@ async def main():
     Здесь инициализируются обработчики команд и запускается polling.
     """
     try:
+        setup_proxy(USER, PASSWORD, IP, PORT)
         logger.info("Бот запущен")
         register_subscription_handlers()  # Регистрация обработчиков для подписки
         register_send_id_handler()  # Регистрация обработчика для отправки ID

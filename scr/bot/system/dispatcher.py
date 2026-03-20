@@ -8,7 +8,9 @@ from dotenv import load_dotenv
 
 SESSION_NAME = "session_name_1"
 
-load_dotenv(dotenv_path='.env')
+# Загружаем .env из корня проекта
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, '.env'))
 
 GROQ_KEY = os.getenv('GROQ_KEY')  # GROQ_KEY
 USER = os.getenv('USER')  # логин для прокси
