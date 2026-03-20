@@ -39,6 +39,6 @@ async def get_participants_count(chat_link):
             except Exception as e:
                 raise ValueError(
                     f"Ошибка при получении данных для {chat_link}: {e}")
-    
+
     except Exception as e:
         logger.exception(e)
