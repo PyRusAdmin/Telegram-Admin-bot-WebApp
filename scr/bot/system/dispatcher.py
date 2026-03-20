@@ -39,12 +39,14 @@ dp = Dispatcher(storage=storage)
 router = Router()
 dp.include_router(router)
 
+# Создание сессии с прокси для подключения к Telegram
 session = AiohttpSession(
     proxy=f"http://{USER}:{PASSWORD}@{IP}:{PORT}"
-) # Прокси для запуска Telegram бота
+)  # Используется HTTP-прокси с аутентификацией для обхода блокировок
 
+# Инициализация бота с токеном, настройками по умолчанию и прокси-сессией
 bot = Bot(
-    token=bot_token_2,
-    default=DefaultBotProperties(),
-    session=session
+    token=bot_token_2,  # Токен Telegram-бота из переменных окружения
+    default=DefaultBotProperties(),  # Применение стандартных свойств бота (например, parse_mode)
+    session=session  # Подключение сессии с прокси для работы бота
 )
