@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.exceptions import TelegramNetworkError
@@ -15,9 +15,7 @@ from scr.bot.handlers.member import register_member_handlers
 from scr.bot.handlers.message_moderation import register_get_id_ban
 from scr.bot.handlers.message_moderation_handler import register_subscription_handlers
 from scr.bot.system.dispatcher import (
-    dp, router,
-    bot_token_2,
-    USER, PASSWORD, IP, PORT
+    dp, bot_token_2, USER, PASSWORD, IP, PORT
 )
 from scr.proxy.proxy import setup_proxy
 
@@ -27,7 +25,7 @@ async def main():
     Главная асинхронная функция для запуска бота.
     Здесь инициализируются обработчики команд и запускается polling.
     """
-    # Настройка прокси для ОС и aiohttp
+    # Настройка прокси через переменные окружения
     setup_proxy(USER, PASSWORD, IP, PORT)
 
     try:

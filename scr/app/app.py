@@ -444,7 +444,6 @@ async def chat_subscribe(chat_title: str, required_chat_title: str):
 
 if __name__ == "__main__":
     # Инициализируем бота для работы API
-    import aiohttp
     from aiogram import Bot
     from aiogram.client.default import DefaultBotProperties
     from aiogram.client.session.aiohttp import AiohttpSession
@@ -457,7 +456,7 @@ if __name__ == "__main__":
     IP = os.getenv('IP')
     PORT = os.getenv('PORT')
 
-    # Настройка прокси
+    # Настройка прокси через переменные окружения
     from scr.proxy.proxy import setup_proxy
     setup_proxy(USER, PASSWORD, IP, PORT)
 
