@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 import asyncio
 
-from aiogram import Bot
-from aiogram.client.default import DefaultBotProperties
-from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.exceptions import TelegramNetworkError
 from loguru import logger  # https://github.com/Delgan/loguru
 
@@ -15,9 +12,8 @@ from scr.bot.handlers.member import register_member_handlers
 from scr.bot.handlers.message_moderation import register_get_id_ban
 from scr.bot.handlers.message_moderation_handler import register_subscription_handlers
 from scr.bot.system.dispatcher import (
-    dp, bot_token_2, USER, PASSWORD, IP, PORT
+    dp, bot
 )
-from scr.proxy.proxy import setup_proxy
 
 
 async def main():
@@ -25,18 +21,9 @@ async def main():
     Главная асинхронная функция для запуска бота.
     Здесь инициализируются обработчики команд и запускается polling.
     """
-    # Настройка прокси через переменные окружения
-    setup_proxy(USER, PASSWORD, IP, PORT)
 
     try:
-        # Создаём сессию без явного прокси (прокси работает через переменные окружения)
-        session = AiohttpSession()
-
-        bot = Bot(
-            token=bot_token_2,
-            default=DefaultBotProperties(),
-            session=session
-        )
+        # Создание сессии с прокси для aiogram 3.x
 
         logger.info("Бот запущен")
         register_subscription_handlers()  # Регистрация обработчиков для подписки
@@ -55,11 +42,6 @@ async def main():
 
     except Exception as error:
         logger.exception(error)  # Логирование исключений, если что-то пошло не так
-
-    finally:
-        # Закрытие сессии при остановке
-        await session.close()
-        await bot.session.close()
 
 
 if __name__ == "__main__":  # Точка входа в программу

@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
 
+from aiogram import Bot
 from aiogram import Dispatcher, Router
+from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import ChatPermissions
 from dotenv import load_dotenv
@@ -35,3 +38,13 @@ storage = MemoryStorage()  # Хранилище
 dp = Dispatcher(storage=storage)
 router = Router()
 dp.include_router(router)
+
+session = AiohttpSession(
+    proxy=f"http://{USER}:{PASSWORD}@{IP}:{PORT}"
+) # Прокси для запуска Telegram бота
+
+bot = Bot(
+    token=bot_token_2,
+    default=DefaultBotProperties(),
+    session=session
+)
