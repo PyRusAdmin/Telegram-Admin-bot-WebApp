@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Dispatcher, Router
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import ChatPermissions
 from dotenv import load_dotenv
@@ -30,9 +30,7 @@ time_del = os.getenv('TIME_DEL')  # Время удаления сообщени
 READ_ONLY = ChatPermissions(can_send_messages=False)  # Запрещено писать в чат
 FULL_ACCESS = ChatPermissions(can_send_messages=True)  # Разрешено писать в чат
 
-# Инициализация бота и диспетчера
-bot = Bot(token=bot_token_2)
-
+# Инициализация диспетчера и роутера
 storage = MemoryStorage()  # Хранилище
 dp = Dispatcher(storage=storage)
 router = Router()

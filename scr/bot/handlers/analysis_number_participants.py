@@ -4,7 +4,7 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from loguru import logger
 
-from scr.bot.system.dispatcher import bot, router
+from scr.bot.system.dispatcher import router
 from scr.utils.models import get_id_grup_for_administration, get_chat_link_by_chat_id
 
 
@@ -25,8 +25,8 @@ async def getCountMembers(message: types.Message):
                 actual_chat_id = chat_id
 
             try:
-                chat = await bot.get_chat(chat_id=actual_chat_id)
-                count = await bot.get_chat_member_count(chat_id=actual_chat_id)
+                chat = await message.bot.get_chat(chat_id=actual_chat_id)
+                count = await message.bot.get_chat_member_count(chat_id=actual_chat_id)
                 response_lines.append(
                     f"📌 Название: {chat.title}\n"
                     f"👥 Количество участников: {count}"

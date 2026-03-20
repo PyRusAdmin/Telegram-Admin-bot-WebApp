@@ -10,7 +10,6 @@ from peewee import DoesNotExist
 
 from scr.bot.keyboard.keyboard import create_admin_panel_keyboard
 from scr.bot.messages.translations_loader import translations
-from scr.bot.system.dispatcher import bot
 from scr.bot.system.dispatcher import router
 from scr.bot.system.dispatcher import time_del
 from scr.utils.models import BadWords, get_privileged_users, save_bot_user, BannedUser, log_spam
@@ -53,7 +52,7 @@ async def unified_message_handler(message: Message) -> None:
                 can_send_other_messages=False,
                 can_add_web_page_previews=False,
             )
-            await bot.restrict_chat_member(
+            await message.bot.restrict_chat_member(
                 chat_id=message.chat.id,
                 user_id=user_id,
                 permissions=permissions
@@ -61,7 +60,7 @@ async def unified_message_handler(message: Message) -> None:
             # Удаляем сообщение
             await message.delete()
             # Опционально: отправить уведомление (лучше в личку или лог-канал)
-            # await bot.send_message(user_id, "Вы ограничены в этой группе за нарушение правил.")
+            # await message.bot.send_message(user_id, "Вы ограничены в этой группе за нарушение правил.")
         except DoesNotExist:
             # Пользователь не заблокирован — ничего не делаем
             pass
@@ -78,7 +77,7 @@ async def unified_message_handler(message: Message) -> None:
                 await save_bot_user(message)
 
                 logger.info(f"Пользователь {user_id} прислал команду /start")
-                await bot.send_message(
+                await message.bot.send_message(
                     chat_id,
                     translations["ru"]["menu"]["user"],
                     reply_markup=create_admin_panel_keyboard(),
@@ -97,7 +96,7 @@ async def unified_message_handler(message: Message) -> None:
                 required_channel_username = restriction.required_channel_username
                 channel_chat_id = f"-100{required_channel_id}"
 
-                member = await bot.get_chat_member(chat_id=channel_chat_id, user_id=user_id)
+                member = await message.bot.get_chat_member(chat_id=channel_chat_id, user_id=user_id)
                 if member.status not in [
                     ChatMemberStatus.MEMBER,
                     ChatMemberStatus.ADMINISTRATOR,
@@ -202,11 +201,11 @@ async def on_chat_member_update(update: ChatMemberUpdated):
             # Получаем group_id из кортежа (предполагается, что select вернул один столбец)
             group_id = group_tuple[0]
             try:
-                member = await bot.get_chat_member(
+                member = await update.bot.get_chat_member(
                     chat_id=group_id, user_id=update.user.id
                 )
                 if member.status == ChatMemberStatus.RESTRICTED:
-                    await bot.restrict_chat_member(
+                    await update.bot.restrict_chat_member(
                         chat_id=group_id,
                         user_id=update.user.id,
                         permissions=ChatPermissions(can_send_messages=True),
@@ -227,7 +226,7 @@ async def delete_message_after_delay(message: Message, delay: int):
     """Удаляет сообщение через заданное количество секунд"""
     await asyncio.sleep(delay)
     try:
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+        await message.bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
     except Exception as e:
         logger.error(f"Ошибка при удалении сообщения: {e}")
 
