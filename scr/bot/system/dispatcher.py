@@ -20,8 +20,8 @@ PORT = os.getenv('PORT')
 IP = os.getenv('IP')
 OAuth = os.getenv('OAuth')
 
-api_id = int(os.getenv('id'))
-api_hash = os.getenv('hash')
+# api_id = int(os.getenv('id'))
+# api_hash = os.getenv('hash')
 
 bot_token_2 = os.getenv('BOT_TOKEN_2')
 time_del = os.getenv('TIME_DEL')

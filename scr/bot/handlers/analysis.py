@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 
+from aiogram import Router
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
@@ -8,10 +9,10 @@ from aiogram.types import CallbackQuery
 from aiogram.types import Message
 from groq import Groq
 from loguru import logger
-from aiogram import Router
+
 from scr.YandexWordstatPy.yandex_wordstat_py import yandex_wordstat_py
 from scr.bot.states.states import AnalysisState
-from scr.bot.system.dispatcher import GROQ_KEY, OAuth, USER, PASSWORD, IP, PORT, bot
+from scr.bot.system.dispatcher import GROQ_KEY, OAuth, USER, PASSWORD, IP, PORT
 from scr.proxy.proxy import setup_proxy
 
 router = Router(name=__name__)
@@ -24,7 +25,7 @@ async def get_chat_completion(work: str) -> str:
 
         client = Groq(api_key=GROQ_KEY)
         chat_completion = client.chat.completions.create(
-            model="meta-llama/llama-4-maverick-17b-128e-instruct",
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
             messages=[
                 {"role": "system",
                  "content": "Проанализируй текст и найди ключевые словосочетания. Обрати внимание, что мне не нужно писать "
@@ -46,7 +47,7 @@ async def get_data_sort(work: str) -> str:
 
         client = Groq(api_key=GROQ_KEY)
         chat_completion = client.chat.completions.create(
-            model="meta-llama/llama-4-maverick-17b-128e-instruct",
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
             messages=[
                 {"role": "system", "content": (
                     "Ты — эксперт по анализу поисковых запросов. "
@@ -124,10 +125,10 @@ async def get_link_post_user(message: Message, state: FSMContext):
         match_public = re.match(r"https://t\.me/([^/]+)/(\d+)", link)
         match_private = re.match(r"https://t\.me/c/(\d+)/(\d+)", link)
         logger.info(f"match_public: {match_public}, match_private: {match_private}")
-        
+
         channel, message_id = None, None
         if match_public:
-            channel = match_public.group(1)
+            channel = "@" + match_public.group(1)   # ← добавить @
             message_id = int(match_public.group(2))
         elif match_private:
             channel_id = int(match_private.group(1))
@@ -139,35 +140,51 @@ async def get_link_post_user(message: Message, state: FSMContext):
             return
 
         await message.answer("🔄 Получаю пост из канала...")
-        
+
         try:
             # Проверяем доступ к каналу
             chat = await message.bot.get_chat(chat_id=channel)
             logger.info(f"Получен чат: {chat.title}, type: {chat.type}")
-            
+
             # Копируем сообщение для получения текста
-            forward_msg = await message.bot.copy_message(
+            # forward_message возвращает полный Message с .text и .caption
+            forward_msg = await message.bot.forward_message(
                 chat_id=message.chat.id,
                 from_chat_id=channel,
                 message_id=message_id
             )
             post_text = forward_msg.text or forward_msg.caption or ""
-            
+
             # Удаляем пересланное сообщение
-            await forward_msg.delete()
-            
+            try:
+                await message.bot.delete_message(
+                    chat_id=message.chat.id,
+                    message_id=forward_msg.message_id
+                )
+            except Exception as e:
+                logger.warning(f"Не удалось удалить пересланное сообщение: {e}")
+
         except TelegramBadRequest as e:
             error_msg = str(e).lower()
-            if "chat not found" in error_msg or "private channel" in error_msg:
+            logger.warning(f"TelegramBadRequest при получении поста: {e}")
+
+            if "chat_forward_privacy" in error_msg or "forward_privacy" in error_msg:
                 await message.answer(
-                    "❌ <b>Ошибка:</b> Бот не является администратором в этом канале.\n\n"
-                    "Для анализа поста бот должен быть добавлен в канал как администратор.",
+                    "❌ <b>На канале включена защита контента</b> (запрет пересылки).\n\n"
+                    "Отключите её: <i>Настройки канала → Тип канала → Защита контента</i>",
+                    parse_mode=ParseMode.HTML
+                )
+            elif "chat not found" in error_msg or "channel_private" in error_msg:
+                await message.answer(
+                    "❌ <b>Канал не найден или бот не имеет доступа.</b>\n\n"
+                    "Для приватного канала добавьте бота как администратора.",
                     parse_mode=ParseMode.HTML
                 )
             elif "message not found" in error_msg or "have no access" in error_msg:
                 await message.answer("⚠️ Пост не найден или бот не имеет доступа к нему.")
             else:
                 await message.answer(f"❌ Ошибка при получении поста: {e}")
+
             await state.clear()
             return
 
