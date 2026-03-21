@@ -2,17 +2,16 @@
 import re
 
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram.types import Message
 from groq import Groq
 from loguru import logger
-from telethon import TelegramClient
-from telethon.tl.functions.channels import JoinChannelRequest
 from aiogram import Router
 from scr.YandexWordstatPy.yandex_wordstat_py import yandex_wordstat_py
 from scr.bot.states.states import AnalysisState
-from scr.bot.system.dispatcher import api_id, api_hash, GROQ_KEY, OAuth, SESSION_NAME, USER, PASSWORD, IP, PORT
+from scr.bot.system.dispatcher import GROQ_KEY, OAuth, USER, PASSWORD, IP, PORT, bot
 from scr.proxy.proxy import setup_proxy
 
 router = Router(name=__name__)
@@ -79,6 +78,8 @@ async def analysis_callback(callback: CallbackQuery, state: FSMContext):
 
     text = (
         "🤖 <b>Анализ поста в Telegram</b>\n\n"
+        "⚠️ <b>Важно:</b> Бот должен быть <b>администратором</b> в канале/группе, "
+        "чтобы прочитать пост. Если бот не администратор — анализ не сработает.\n\n"
         "Вот что сделает бот после того, как вы отправите ссылку на пост:\n\n"
         "1️⃣ Извлечёт текст из поста.\n"
         "2️⃣ AI ✨ определит ключевые фразы.\n"
@@ -100,7 +101,7 @@ async def analysis_callback(callback: CallbackQuery, state: FSMContext):
 
 @router.message(AnalysisState.link_post)
 async def get_link_post_user(message: Message, state: FSMContext):
-    """Получает ссылку от пользователя"""
+    """Получает ссылку от пользователя и анализирует пост через бота"""
     try:
         data = await state.get_data()
         prompt_msg_id = data.get("prompt_msg_id")
@@ -119,16 +120,11 @@ async def get_link_post_user(message: Message, state: FSMContext):
         link = message.text.strip()
         logger.info(f"Получена ссылка: {link}")
         await state.update_data(link_post=link)
-        await state.clear()
-
-        await message.answer(
-            text=f"✅ Ссылка получена:\n{link}",
-            disable_web_page_preview=True
-        )
 
         match_public = re.match(r"https://t\.me/([^/]+)/(\d+)", link)
         match_private = re.match(r"https://t\.me/c/(\d+)/(\d+)", link)
         logger.info(f"match_public: {match_public}, match_private: {match_private}")
+        
         channel, message_id = None, None
         if match_public:
             channel = match_public.group(1)
@@ -139,38 +135,54 @@ async def get_link_post_user(message: Message, state: FSMContext):
             channel = int(f"-100{channel_id}")
         else:
             await message.answer("⚠️ Неверная ссылка. Пришлите ссылку на пост вида https://t.me/username/123")
+            await state.clear()
             return
 
-        async with TelegramClient(f"scr/setting/{SESSION_NAME}", api_id, api_hash) as client:
-            await client.connect()
-            try:
-                if isinstance(channel, str):
-                    try:
-                        await client(JoinChannelRequest(channel))
-                    except Exception as e:
-                        logger.warning(f"Не удалось подписаться: {e}")
-                msg = await client.get_messages(channel, ids=message_id)
-                logger.info(f"Получено сообщение: {msg}")
-                post_text = msg.text
-                logger.info(f"Получен текст поста: {post_text}")
-                if not msg:
-                    await message.answer("⚠️ Пост не найден.")
-                    return
-                post_text = msg.text or ""
-                if not post_text.strip():
-                    await message.answer("⚠️ Пост без текста (возможно только медиа).")
-                    return
-                await message.answer("🔄 Обрабатываю текст поста через ИИ...")
-                ai_answer = await get_chat_completion(work=post_text)
-                await message.answer(f"🤖 Ключевые слова:\n{ai_answer}")
-                keywords = ai_text_to_list(ai_answer)
-                logger.debug(keywords)
-            except Exception as e:
-                logger.error(f"Ошибка анализа поста: {e}")
-                await message.answer("⚠️ Ошибка при обработке поста.")
+        await message.answer("🔄 Получаю пост из канала...")
+        
+        try:
+            # Проверяем доступ к каналу
+            chat = await message.bot.get_chat(chat_id=channel)
+            logger.info(f"Получен чат: {chat.title}, type: {chat.type}")
+            
+            # Копируем сообщение для получения текста
+            forward_msg = await message.bot.copy_message(
+                chat_id=message.chat.id,
+                from_chat_id=channel,
+                message_id=message_id
+            )
+            post_text = forward_msg.text or forward_msg.caption or ""
+            
+            # Удаляем пересланное сообщение
+            await forward_msg.delete()
+            
+        except TelegramBadRequest as e:
+            error_msg = str(e).lower()
+            if "chat not found" in error_msg or "private channel" in error_msg:
+                await message.answer(
+                    "❌ <b>Ошибка:</b> Бот не является администратором в этом канале.\n\n"
+                    "Для анализа поста бот должен быть добавлен в канал как администратор.",
+                    parse_mode=ParseMode.HTML
+                )
+            elif "message not found" in error_msg or "have no access" in error_msg:
+                await message.answer("⚠️ Пост не найден или бот не имеет доступа к нему.")
+            else:
+                await message.answer(f"❌ Ошибка при получении поста: {e}")
+            await state.clear()
+            return
+
+        if not post_text.strip():
+            await message.answer("⚠️ Пост без текста (возможно только медиа).")
+            await state.clear()
+            return
+
+        await message.answer("🔄 Обрабатываю текст поста через ИИ...")
+        ai_answer = await get_chat_completion(work=post_text)
+        await message.answer(f"🤖 Ключевые слова:\n{ai_answer}")
+        keywords = ai_text_to_list(ai_answer)
+        logger.debug(keywords)
 
         all_results = []
-
         for keyword in keywords:
             await message.answer(f"🔎 Анализирую запрос в Wordstat: «{keyword}»...")
             data = yandex_wordstat_py(keyword, OAuth)
@@ -183,3 +195,6 @@ async def get_link_post_user(message: Message, state: FSMContext):
 
     except Exception as e:
         logger.exception(e)
+        await message.answer("⚠️ Произошла ошибка при анализе поста.")
+    finally:
+        await state.clear()

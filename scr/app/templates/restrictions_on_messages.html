@@ -84,15 +84,19 @@
             );
             const data = await response.json();
             const statusEl = document.getElementById("participants-count");
+            
+            console.log("Ответ сервера:", data);
 
             if (data.success) {
                 statusEl.innerText = `Участников: ${data.participants_count}`;
                 statusEl.className = "status success";
             } else {
-                throw new Error(data.error || "Ошибка получения данных");
+                console.log("Ошибка от сервера:", data.error);
+                statusEl.innerText = data.error || "Ошибка получения данных";
+                statusEl.className = "status error";
             }
         } catch (error) {
-            console.error("Ошибка:", error);
+            console.error("Ошибка сети:", error);
             const statusEl = document.getElementById("participants-count");
             statusEl.innerText = "Не удалось получить количество участников";
             statusEl.className = "status error";

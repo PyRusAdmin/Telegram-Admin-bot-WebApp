@@ -180,40 +180,34 @@ async def delete_group(chat_id: int = Form(...), user_id: int = Form(...)):  # <
 
 
 @app.post("/save-group")
-async def save_group(chat_username: str = Form(...), user_id: int = Form(...)):  # Добавляем user_id
+async def save_group(chat_username: str = Form(...), user_id: int = Form(...)):
     """
-    Запись данных в базу данных по username группы:
-
-    chat_id - ID группы,
-    chat_title - название группы,
-    chat_total - общее количество участников,
-    chat_link - ссылка на группу,
-    user_id - ID пользователя, который добавил группу.
+    Запись данных в базу данных по username группы.
 
     :param chat_username: Username группы.
     :param user_id: ID пользователя, который добавляет группу.
     """
     try:
+        # Удаляем пробелы по краям
+        chat_username = chat_username.strip()
+
         logger.debug(f"Пользователь с ID: {user_id} добавляет группу с username: {chat_username}")
 
-        chat_id, chat_title, chat_total, chat_link = await get_participants_count(
-            chat_username
-        )
+        chat_id, chat_title, chat_total, chat_link = await get_participants_count(chat_username)
         permission_to_write = "True"
-        # Создаем таблицу, если она не создана ранее
         db.create_tables([Group], safe=True)
         with db.atomic():
-            # Вставляем новую
             Group.insert(
                 chat_id=chat_id,
                 chat_title=chat_title,
                 chat_total=chat_total,
                 chat_link=chat_link,
                 permission_to_write=permission_to_write,
-                user_id=user_id,  # Добавляем user_id
+                user_id=user_id,
             ).execute()
         return RedirectResponse(url="/formation-groups?success=1", status_code=303)
     except Exception as e:
+        logger.exception(e)
         return RedirectResponse(url="/formation-groups?error=1", status_code=303)
 
 
@@ -260,18 +254,40 @@ async def update_participants(chat_title: str):
     """
     Обновление количества участников в группе.
     """
-    # Получаем запись из базы данных по chat_title
+    from aiogram.exceptions import TelegramBadRequest
+
     try:
         group = Group.get(Group.chat_title == chat_title)
 
-        # Получаем актуальные данные через Telegram
         chat_id, title, total, link = await get_participants_count(group.chat_link)
-        # Обновляем запись в базе
         Group.update(chat_total=total).where(
             Group.chat_title == chat_title).execute()
 
         return {"success": True, "participants_count": total}
+
+    except TypeError as e:
+        logger.error(e)
+
+    except TelegramBadRequest as e:
+        error_msg = str(e)
+        if "chat not found" in error_msg.lower():
+            logger.warning(f"Чат не найден: {group.chat_title} ({group.chat_link})")
+            return {
+                "success": False,
+                "error": "Бот не состоит в этой группе или не является администратором. Добавьте бота в группу как администратора."
+            }
+        elif "bot is not an administrator" in error_msg.lower():
+            logger.warning(f"Бот не администратор: {group.chat_title} ({group.chat_link})")
+            return {
+                "success": False,
+                "error": "Бот не является администратором в этой группе. Назначьте бота администратором."
+            }
+        else:
+            logger.error(f"Ошибка Telegram API: {e}")
+            return {"success": False, "error": f"Ошибка Telegram: {error_msg}"}
+
     except Exception as e:
+        logger.exception(e)
         return {"success": False, "error": str(e)}
 
 
