@@ -60,12 +60,8 @@ async def unified_message_handler(message: Message) -> None:
                 user_id=user_id,
                 permissions=permissions
             )
-            # Удаляем сообщение
             await message.delete()
-            # Опционально: отправить уведомление (лучше в личку или лог-канал)
-            # await message.bot.send_message(user_id, "Вы ограничены в этой группе за нарушение правил.")
         except DoesNotExist:
-            # Пользователь не заблокирован — ничего не делаем
             pass
 
         # Преобразуем в строку и убираем -100
@@ -73,12 +69,9 @@ async def unified_message_handler(message: Message) -> None:
         privileged_users = get_privileged_users()
         logger.debug(f"privileged_users: {privileged_users}")
 
-        # Если личка, просто реагируем на /start
         if message.chat.type == "private":
             if message.text == "/start":
-                # сохраняем юзера
                 await save_bot_user(message)
-
                 logger.info(f"Пользователь {user_id} прислал команду /start")
                 await message.bot.send_message(
                     chat_id,
@@ -197,16 +190,12 @@ async def on_chat_member_update(update: ChatMemberUpdated):
     ]:
         return
     try:
-        # Чистим ID канала от префикса -100 перед поиском в базе
-        clean_channel_id = str(update.chat.id)[4:]  # -> "2022404388"
-        # Находим все группы, где требуется подписка на этот канал
+        clean_channel_id = str(update.chat.id)[4:]
         query = GroupRestrictions.select(GroupRestrictions.group_id).where(
             GroupRestrictions.required_channel_id == clean_channel_id
         )
-        # Получаем список ID групп
         groups = list(query.tuples())
         for group_tuple in groups:
-            # Получаем group_id из кортежа (предполагается, что select вернул один столбец)
             group_id = group_tuple[0]
             try:
                 member = await update.bot.get_chat_member(

@@ -14,7 +14,6 @@ async def send_id(message: Message):
         logger.info(
             f"Пользователь {message.from_user.id} вызвал команду '/id' в чате {message.chat.id}"
         )
-        # Проверяем, является ли пользователь админом в текущем чате
         chat_member = await message.bot.get_chat_member(
             chat_id=message.chat.id, user_id=message.from_user.id
         )

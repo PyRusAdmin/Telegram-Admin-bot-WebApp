@@ -30,7 +30,7 @@ async def get_chat_completion(work: str) -> str:
                  "content": "Проанализируй текст и найди ключевые словосочетания. Обрати внимание, что мне не нужно писать "
                             "много текста, мне нужен просто список словосочетаний без 1,2,3 и без лишнего текста. "
                             "Нужно не более 5 ключевых словосочетаний"},
-                {"role": "user", "content": work},  # <-- используем текст поста
+                {"role": "user", "content": work},
             ],
         )
         return chat_completion.choices[0].message.content
@@ -58,7 +58,7 @@ async def get_data_sort(work: str) -> str:
                     "2. <b>Региональный спрос</b> (где чаще ищут, где реже).\n"
                     "3. <b>Вывод</b> — общий анализ + рекомендации."
                 )},
-                {"role": "user", "content": work},  # <-- используем текст поста
+                {"role": "user", "content": work},
             ],
         )
         return chat_completion.choices[0].message.content
@@ -68,18 +68,8 @@ async def get_data_sort(work: str) -> str:
 
 
 def ai_text_to_list(text: str) -> list[str]:
-    """
-    Преобразует многострочный текст в список строк.
-    Убирает пустые строки и пробелы по краям.
-    """
+    """Преобразует многострочный текст в список строк."""
     return [line.strip() for line in text.splitlines() if line.strip()]
-
-
-def pretty_regions(data: dict) -> str:
-    result = [f"📊 Региональная статистика для запроса: {data['requestPhrase']}"]
-    for region in data.get("regions", []):
-        result.append(f"   • {region['regionName']} — {region['count']:,}")
-    return "\n".join(result)
 
 
 @router.callback_query(lambda c: c.data == "analysis")
@@ -102,14 +92,11 @@ async def analysis_callback(callback: CallbackQuery, state: FSMContext):
         parse_mode=ParseMode.HTML,
         disable_web_page_preview=True,
     )
-    await state.update_data(prompt_msg_id=msg.message_id)  # сохраним id сообщения для удаления
-
-    # Переводим пользователя в состояние ожидания ссылки
+    await state.update_data(prompt_msg_id=msg.message_id)
     await state.set_state(AnalysisState.link_post)
     await callback.answer()
 
 
-# Хендлер получения ссылки от пользователя
 @router.message(AnalysisState.link_post)
 async def get_link_post_user(message: Message, state: FSMContext):
     """Получает ссылку от пользователя"""
@@ -117,14 +104,12 @@ async def get_link_post_user(message: Message, state: FSMContext):
         data = await state.get_data()
         prompt_msg_id = data.get("prompt_msg_id")
 
-        # Удаляем сообщение бота "Пришлите ссылку..."
         if prompt_msg_id:
             try:
                 await message.bot.delete_message(chat_id=message.chat.id, message_id=prompt_msg_id)
             except Exception as e:
                 logger.warning(f"Не удалось удалить сообщение: {e}")
 
-        # Удаляем сообщение пользователя со ссылкой
         try:
             await message.delete()
         except Exception as e:
@@ -132,55 +117,49 @@ async def get_link_post_user(message: Message, state: FSMContext):
 
         link = message.text.strip()
         logger.info(f"Получена ссылка: {link}")
-        # Сохраним ссылку в FSM (на всякий случай)
         await state.update_data(link_post=link)
         await state.clear()
 
         await message.answer(
             text=f"✅ Ссылка получена:\n{link}",
-            disable_web_page_preview=True  # отключаем превью в Telegram
+            disable_web_page_preview=True
         )
 
-        # --- Разбираем ссылку ---
         match_public = re.match(r"https://t\.me/([^/]+)/(\d+)", link)
         match_private = re.match(r"https://t\.me/c/(\d+)/(\d+)", link)
         logger.info(f"match_public: {match_public}, match_private: {match_private}")
         channel, message_id = None, None
         if match_public:
-            channel = match_public.group(1)  # username канала
-            message_id = int(match_public.group(2))  # id поста
+            channel = match_public.group(1)
+            message_id = int(match_public.group(2))
         elif match_private:
             channel_id = int(match_private.group(1))
             message_id = int(match_private.group(2))
-            channel = int(f"-100{channel_id}")  # приватные каналы в формате -100XXXXXXXXXX
+            channel = int(f"-100{channel_id}")
         else:
             await message.answer("⚠️ Неверная ссылка. Пришлите ссылку на пост вида https://t.me/username/123")
             return
 
-        # --- Работаем с Telethon ---
         async with TelegramClient(f"scr/setting/{SESSION_NAME}", api_id, api_hash) as client:
             await client.connect()
             try:
-                # Если канал публичный — подписываемся
                 if isinstance(channel, str):
                     try:
                         await client(JoinChannelRequest(channel))
                     except Exception as e:
                         logger.warning(f"Не удалось подписаться: {e}")
-                # Получаем сообщение
                 msg = await client.get_messages(channel, ids=message_id)
                 logger.info(f"Получено сообщение: {msg}")
-                post_text = msg.text  # вот здесь текст поста
+                post_text = msg.text
                 logger.info(f"Получен текст поста: {post_text}")
                 if not msg:
                     await message.answer("⚠️ Пост не найден.")
                     return
-                post_text = msg.text or ""  # .message устарело, лучше использовать .text
+                post_text = msg.text or ""
                 if not post_text.strip():
                     await message.answer("⚠️ Пост без текста (возможно только медиа).")
                     return
                 await message.answer("🔄 Обрабатываю текст поста через ИИ...")
-                # Отправляем в ИИ для анализа
                 ai_answer = await get_chat_completion(work=post_text)
                 await message.answer(f"🤖 Ключевые слова:\n{ai_answer}")
                 keywords = ai_text_to_list(ai_answer)
@@ -189,17 +168,15 @@ async def get_link_post_user(message: Message, state: FSMContext):
                 logger.error(f"Ошибка анализа поста: {e}")
                 await message.answer("⚠️ Ошибка при обработке поста.")
 
-        # --- Работаем с Wordstat ---
         all_results = []
 
         for keyword in keywords:
             await message.answer(f"🔎 Анализирую запрос в Wordstat: «{keyword}»...")
             data = yandex_wordstat_py(keyword, OAuth)
-            all_results.append(data)  # собираем результаты в список
+            all_results.append(data)
             await message.answer(f"📊 Данные по «{keyword}»:\n{data}")
 
-        # --- Общий анализ через ИИ ---
-        combined_text = "\n\n".join(all_results)  # объединяем всё в один текст
+        combined_text = "\n\n".join(all_results)
         ai_answer = await get_data_sort(work=combined_text)
         await message.answer(f"🧠 <b>Общий анализ:</b>\n{ai_answer}", parse_mode=ParseMode.HTML)
 

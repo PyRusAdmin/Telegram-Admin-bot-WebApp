@@ -49,7 +49,6 @@ async def get_random_commenter(channel_username, post_id):
     return random.choice(commenters) if commenters else None
 
 
-# Этот хендлер с фильтром, чтобы не пересекаться с unified_message_handler
 @router.message(lambda m: re.match(r"(?:https?://)?t\.me/[\w\d_+-]+/\d+", m.text or ""))
 async def handle_post_link(message: Message):
     channel_username, post_id = await parse_telegram_link(message.text.strip())

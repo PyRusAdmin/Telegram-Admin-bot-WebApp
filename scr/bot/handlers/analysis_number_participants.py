@@ -18,7 +18,6 @@ async def getCountMembers(message: types.Message):
         response_lines = []
 
         for chat_id in list_id_grup:
-            # Преобразуем "голый" ID в ID супергруппы
             if not str(chat_id).startswith('-100'):
                 actual_chat_id = int(f"-100{chat_id}")
             else:
@@ -42,19 +41,14 @@ async def getCountMembers(message: types.Message):
                 logger.exception(e)
                 response_lines.append(f"❌ Ошибка при обработке чата с ID {chat_id}")
 
-        # Отправляем всё одним сообщением
         if response_lines:
             full_response = "\n\n".join(response_lines)
-            # Telegram имеет лимит на длину сообщения (~4096 символов)
-            # Если текст слишком длинный — можно разбить на части
             if len(full_response) <= 4096:
                 await message.answer(full_response)
             else:
-                # Разбиваем на части по 4096 символов с учётом границ строк
                 while full_response:
                     part = full_response[:4096]
                     if len(part) == 4096:
-                        # Пытаемся не обрезать посреди строки
                         last_newline = part.rfind("\n\n")
                         if last_newline != -1:
                             part = part[:last_newline]

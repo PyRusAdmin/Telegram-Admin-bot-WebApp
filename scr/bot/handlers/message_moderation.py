@@ -25,7 +25,6 @@ async def get_id_ban(message: types.Message):
     user_id = int(user_id_str)
 
     try:
-        # Проверяем, не существует ли уже такой записи
         if BannedUser.get_or_none(BannedUser.user_id == user_id):
             await message.answer(f"ID {user_id} уже находится в списке заблокированных.")
         else:
