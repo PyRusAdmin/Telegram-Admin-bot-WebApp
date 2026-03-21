@@ -13,7 +13,6 @@ from aiogram import Router
 from scr.YandexWordstatPy.yandex_wordstat_py import yandex_wordstat_py
 from scr.bot.states.states import AnalysisState
 from scr.bot.system.dispatcher import api_id, api_hash, GROQ_KEY, OAuth, SESSION_NAME, USER, PASSWORD, IP, PORT
-# from scr.bot.system.dispatcher import router
 from scr.proxy.proxy import setup_proxy
 
 router = Router(name=__name__)
@@ -206,8 +205,3 @@ async def get_link_post_user(message: Message, state: FSMContext):
 
     except Exception as e:
         logger.exception(e)
-
-
-# def register_analysis_handler() -> None:
-#     router.callback_query.register(analysis_callback)
-#     router.message.register(get_link_post_user, AnalysisState.link_post)

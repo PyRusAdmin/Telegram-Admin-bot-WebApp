@@ -2,7 +2,6 @@
 from aiogram import types
 from aiogram.filters import Command
 from aiogram import Router
-# from scr.bot.system.dispatcher import router
 from scr.utils.models import BannedUser
 
 router = Router(name=__name__)
@@ -33,9 +32,4 @@ async def get_id_ban(message: types.Message):
             BannedUser.create(user_id=user_id)
             await message.answer(f"ID {user_id} успешно добавлен в список заблокированных.")
     except Exception as e:
-        # Лучше логировать ошибку, но для простоты — сообщение
         await message.answer("Произошла ошибка при сохранении в базу данных.")
-        # В продакшене: logger.error(e)
-
-# def register_get_id_ban() -> None:
-#     router.message.register(get_id_ban)

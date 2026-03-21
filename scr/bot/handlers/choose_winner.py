@@ -63,8 +63,3 @@ async def handle_post_link(message: Message):
         await message.reply(f"🎉 Победитель: @{username} (ID: {user_id})")
     else:
         await message.reply("❌ Не удалось найти комментаторов.")
-
-
-# def register_choose_winer_handler() -> None:
-#     router.callback_query.register(choose_winner_callback)  # правильная регистрация
-#     router.message.register(handle_post_link)

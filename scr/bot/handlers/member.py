@@ -8,8 +8,6 @@ from aiogram.types import ChatMemberUpdated
 from aiogram.types import Message
 from loguru import logger
 from aiogram import Router
-# Импорты из системы
-# from scr.bot.system.dispatcher import router  # Экземпляр диспетчера (бота и роутера)
 from scr.utils.models import GroupMembers
 
 router = Router(name=__name__)
@@ -94,9 +92,5 @@ async def delete_system_message_member_left(message: Message):
 
     Тип сообщения: left_chat_member (https://docs.aiogram.dev/en/v3.1.1/api/enums/content_type.html)
     """
-    await message.delete()  # Удаляем системное сообщение
+    await message.delete()
     logger.info("Удаляем системное сообщение")
-
-# def register_member_handlers() -> None:
-#     router.message.register(delete_system_message_new_member)
-#     router.message.register(delete_system_message_member_left)

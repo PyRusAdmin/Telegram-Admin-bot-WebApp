@@ -3,9 +3,9 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from loguru import logger
 from aiogram import Router
-# from scr.bot.system.dispatcher import router
 
 router = Router(name=__name__)
+
 
 @router.message(Command("id"))
 async def send_id(message: Message):
@@ -19,32 +19,22 @@ async def send_id(message: Message):
             chat_id=message.chat.id, user_id=message.from_user.id
         )
         if chat_member.status not in ["administrator", "creator"]:
-            # Если пользователь не является админом, отправляем ему сообщение с предупреждением
             await message.bot.send_message(
                 chat_id=message.chat.id, text="Команда доступна только для администраторов."
             )
-            await message.delete()  # Удаляем сообщение с командой /id
+            await message.delete()
             return
         try:
-            # получаем ID пользователя, который написал сообщение
-            # получаем информацию о пользователе по его ID
             user = await message.bot.get_chat(message.reply_to_message.from_user.id)
-            # отправляем ID, имя и фамилию пользователя в личку
             await message.bot.send_message(
                 chat_id=message.from_user.id,
                 text=f"Пользователь: {user.first_name} {user.last_name}\nID: {user.id}",
             )
-            # удаляем сообщение с командой /id
             await message.bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
         except AttributeError:
-            # если произошла ошибка AttributeError, то сообщаем об этом пользователю
             await message.bot.send_message(
                 chat_id=message.chat.id,
                 text="Ответьте на сообщение пользователя, чтобы узнать его ID",
             )
     except Exception as e:
         logger.exception(e)
-
-
-# def register_send_id_handler() -> None:
-#     router.message.register(send_id, Command("id"))

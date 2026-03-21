@@ -10,7 +10,6 @@ from peewee import DoesNotExist
 
 from scr.bot.keyboard.keyboard import create_admin_panel_keyboard
 from scr.bot.messages.translations_loader import translations
-# from scr.bot.system.dispatcher import router
 from scr.bot.system.dispatcher import time_del
 from scr.utils.models import BadWords, get_privileged_users, save_bot_user, BannedUser, log_spam
 from scr.utils.models import GroupRestrictions
@@ -238,8 +237,3 @@ async def delete_message_after_delay(message: Message, delay: int):
         await message.bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
     except Exception as e:
         logger.error(f"Ошибка при удалении сообщения: {e}")
-
-# def register_subscription_handlers() -> None:
-#     router.chat_member.register(on_chat_member_update)
-#     router.message.register(unified_message_handler)
-#     router.chat_member.register(on_chat_member_update)
