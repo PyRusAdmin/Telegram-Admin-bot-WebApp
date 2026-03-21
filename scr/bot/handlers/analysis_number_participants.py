@@ -3,10 +3,11 @@ from aiogram import types
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command
 from loguru import logger
-
-from scr.bot.system.dispatcher import router
+from aiogram import Router
+# from scr.bot.system.dispatcher import router
 from scr.utils.models import get_id_grup_for_administration, get_chat_link_by_chat_id
 
+router = Router(name=__name__)
 
 @router.message(Command("count"))
 async def getCountMembers(message: types.Message):
@@ -72,5 +73,5 @@ async def getCountMembers(message: types.Message):
         await message.answer("Произошла ошибка при получении данных.")
 
 
-def register_getCountMembers_handlers():
-    router.message.register(getCountMembers, Command("count"))
+# def register_getCountMembers_handlers():
+#     router.message.register(getCountMembers, Command("count"))

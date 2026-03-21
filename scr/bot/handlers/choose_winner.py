@@ -7,8 +7,10 @@ from aiogram.types import Message
 from loguru import logger
 from telethon import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
+from aiogram import Router
+from scr.bot.system.dispatcher import api_id, api_hash
 
-from scr.bot.system.dispatcher import router, api_id, api_hash
+router = Router(name=__name__)
 
 SESSION_NAME = "session_name_1"
 
@@ -63,6 +65,6 @@ async def handle_post_link(message: Message):
         await message.reply("❌ Не удалось найти комментаторов.")
 
 
-def register_choose_winer_handler() -> None:
-    router.callback_query.register(choose_winner_callback)  # правильная регистрация
-    router.message.register(handle_post_link)
+# def register_choose_winer_handler() -> None:
+#     router.callback_query.register(choose_winner_callback)  # правильная регистрация
+#     router.message.register(handle_post_link)

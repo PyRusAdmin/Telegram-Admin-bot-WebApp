@@ -2,14 +2,17 @@
 import datetime
 
 from aiogram import F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import ChatMemberUpdatedFilter, IS_NOT_MEMBER, IS_MEMBER
 from aiogram.types import ChatMemberUpdated
 from aiogram.types import Message
 from loguru import logger
-
+from aiogram import Router
 # Импорты из системы
-from scr.bot.system.dispatcher import router  # Экземпляр диспетчера (бота и роутера)
+# from scr.bot.system.dispatcher import router  # Экземпляр диспетчера (бота и роутера)
 from scr.utils.models import GroupMembers
+
+router = Router(name=__name__)
 
 
 @router.chat_member(ChatMemberUpdatedFilter(IS_NOT_MEMBER >> IS_MEMBER))
@@ -75,8 +78,13 @@ async def delete_system_message_new_member(message: Message):
 
     Тип сообщения: new_chat_members (https://docs.aiogram.dev/en/v3.1.1/api/enums/content_type.html)
     """
-    await message.delete()  # Удаляем системное сообщение
-    logger.info("Удаляем системное сообщение")
+    try:
+        await message.delete()  # Удаляем системное сообщение
+        logger.info("Удаляем системное сообщение")
+    except TelegramBadRequest as e:
+        logger.warning(e)
+    except Exception as e:
+        logger.exception(e)
 
 
 @router.message(F.left_chat_member)
@@ -89,7 +97,6 @@ async def delete_system_message_member_left(message: Message):
     await message.delete()  # Удаляем системное сообщение
     logger.info("Удаляем системное сообщение")
 
-
-def register_member_handlers() -> None:
-    router.message.register(delete_system_message_new_member)
-    router.message.register(delete_system_message_member_left)
+# def register_member_handlers() -> None:
+#     router.message.register(delete_system_message_new_member)
+#     router.message.register(delete_system_message_member_left)

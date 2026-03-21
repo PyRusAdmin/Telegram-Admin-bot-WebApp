@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from aiogram import types
 from aiogram.filters import Command
-
-from scr.bot.system.dispatcher import router
+from aiogram import Router
+# from scr.bot.system.dispatcher import router
 from scr.utils.models import BannedUser
+
+router = Router(name=__name__)
 
 
 @router.message(Command("id_ban"))
@@ -35,6 +37,5 @@ async def get_id_ban(message: types.Message):
         await message.answer("Произошла ошибка при сохранении в базу данных.")
         # В продакшене: logger.error(e)
 
-
-def register_get_id_ban() -> None:
-    router.message.register(get_id_ban)
+# def register_get_id_ban() -> None:
+#     router.message.register(get_id_ban)

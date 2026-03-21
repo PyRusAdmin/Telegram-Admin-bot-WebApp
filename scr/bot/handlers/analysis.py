@@ -9,13 +9,14 @@ from groq import Groq
 from loguru import logger
 from telethon import TelegramClient
 from telethon.tl.functions.channels import JoinChannelRequest
-
+from aiogram import Router
 from scr.YandexWordstatPy.yandex_wordstat_py import yandex_wordstat_py
 from scr.bot.states.states import AnalysisState
 from scr.bot.system.dispatcher import api_id, api_hash, GROQ_KEY, OAuth, SESSION_NAME, USER, PASSWORD, IP, PORT
-from scr.bot.system.dispatcher import router
+# from scr.bot.system.dispatcher import router
 from scr.proxy.proxy import setup_proxy
 
+router = Router(name=__name__)
 
 async def get_chat_completion(work: str) -> str:
     """Возвращает ключевые слова из текста поста через ИИ"""
@@ -207,6 +208,6 @@ async def get_link_post_user(message: Message, state: FSMContext):
         logger.exception(e)
 
 
-def register_analysis_handler() -> None:
-    router.callback_query.register(analysis_callback)
-    router.message.register(get_link_post_user, AnalysisState.link_post)
+# def register_analysis_handler() -> None:
+#     router.callback_query.register(analysis_callback)
+#     router.message.register(get_link_post_user, AnalysisState.link_post)

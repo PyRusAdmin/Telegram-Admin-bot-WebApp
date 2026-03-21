@@ -2,9 +2,10 @@
 from aiogram.filters import Command
 from aiogram.types import Message
 from loguru import logger
+from aiogram import Router
+# from scr.bot.system.dispatcher import router
 
-from scr.bot.system.dispatcher import router
-
+router = Router(name=__name__)
 
 @router.message(Command("id"))
 async def send_id(message: Message):
@@ -45,5 +46,5 @@ async def send_id(message: Message):
         logger.exception(e)
 
 
-def register_send_id_handler() -> None:
-    router.message.register(send_id, Command("id"))
+# def register_send_id_handler() -> None:
+#     router.message.register(send_id, Command("id"))
