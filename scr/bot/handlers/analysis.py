@@ -17,6 +17,7 @@ from scr.proxy.proxy import setup_proxy
 
 router = Router(name=__name__)
 
+
 async def get_chat_completion(work: str) -> str:
     """Возвращает ключевые слова из текста поста через ИИ"""
     try:

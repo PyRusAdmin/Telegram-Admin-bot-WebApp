@@ -66,11 +66,12 @@ async def unified_message_handler(message: Message) -> None:
 
         privileged_users = get_privileged_users()
         logger.debug(f"privileged_users: {privileged_users}")
-        
+
         # Нормализуем chat_id для сравнения (убираем -100)
         normalized_chat_id = int(str(chat_id).replace("-100", ""))
         logger.debug(f"normalized_chat_id: {normalized_chat_id}, user_id: {user_id}")
-        logger.debug(f"Проверка: ({normalized_chat_id}, {user_id}) in privileged_users: {(normalized_chat_id, user_id) in privileged_users}")
+        logger.debug(
+            f"Проверка: ({normalized_chat_id}, {user_id}) in privileged_users: {(normalized_chat_id, user_id) in privileged_users}")
 
         # Пропускаем модерацию для привилегированных пользователей
         if (normalized_chat_id, user_id) in privileged_users:
@@ -144,14 +145,17 @@ async def unified_message_handler(message: Message) -> None:
 
         # Проверка на пересланное сообщение
         if message.forward_from or message.forward_from_chat:
-            await message.delete()
-            warning = await message.answer(
-                translations["ru"]["message_moderation"]["moderation_forward_message"],
-                parse_mode="HTML",
-            )
-            await asyncio.sleep(int(time_del))
-            await warning.delete()
-            return
+            try:
+                await message.delete()
+                warning = await message.answer(
+                    translations["ru"]["message_moderation"]["moderation_forward_message"],
+                    parse_mode="HTML",
+                )
+                await asyncio.sleep(int(time_del))
+                await warning.delete()
+                return
+            except TelegramBadRequest as e:
+                logger.warning(e)
 
         # Проверка текста на запрещенные слова
         if message.text:
