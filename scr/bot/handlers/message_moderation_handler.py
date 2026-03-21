@@ -2,7 +2,7 @@
 import asyncio
 
 from aiogram.enums import ChatMemberStatus
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 from aiogram.filters.chat_member_updated import ChatMemberUpdatedFilter, JOIN_TRANSITION
 from aiogram.types import Message, ChatMemberUpdated, ChatPermissions
 from loguru import logger
@@ -104,17 +104,22 @@ async def unified_message_handler(message: Message) -> None:
                 ]:
                     await message.delete()
                     bot_message = await message.answer(
-                        f"{message.from_user.mention_html()}, привет! 👋 Чтобы писать в группе, подпишись на канал {required_channel_username}. Это временная мера — спасибо за понимание! 🌟",
+                        text=f"{message.from_user.mention_html()}, привет! 👋 Чтобы писать в группе, подпишись на канал {required_channel_username}. Это временная мера — спасибо за понимание! 🌟",
                         parse_mode="HTML",
                     )
                     await asyncio.create_task(delete_message_after_delay(bot_message, 60))
                     return
         except TelegramBadRequest:
             logger.error("Сообщение было удалено ранее")
+        except TelegramRetryAfter:
+            logger.warning('Превышен контроль флуда. Повторите попытку через 3 секунды')
 
         except Exception as e:
             logger.exception(f"Ошибка при проверке подписки: {e}")
-            await message.delete()
+            try:
+                await message.delete()
+            except TelegramBadRequest:
+                logger.error("Сообщение было удалено ранее")
             user_mention = (
                 message.from_user.mention_html()
                 if message.from_user.username
@@ -123,7 +128,7 @@ async def unified_message_handler(message: Message) -> None:
             restriction = GroupRestrictions.get(GroupRestrictions.group_id == clean_id)
             channel_username = restriction.required_channel_username
             bot_message = await message.answer(
-                f"{user_mention}, привет! 👋 Чтобы писать в группе, подпишись на канал {channel_username}. Это временная мера — спасибо за понимание! 🌟",
+                text=f"{user_mention}, привет! 👋 Чтобы писать в группе, подпишись на канал {channel_username}. Это временная мера — спасибо за понимание! 🌟",
                 parse_mode="HTML",
             )
             await asyncio.create_task(delete_message_after_delay(bot_message, 60))
