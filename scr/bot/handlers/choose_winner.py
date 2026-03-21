@@ -61,15 +61,15 @@ init_db()
 async def collect_comment(message: Message):
     # Данные берём из пересланного поста, на который ответил пользователь
     channel_id = message.reply_to_message.forward_from_chat.id
-    post_id    = message.reply_to_message.forward_from_message_id
+    post_id = message.reply_to_message.forward_from_message_id
 
     try:
         Comment.create(
-            channel_id = channel_id,
-            post_id    = post_id,
-            user_id    = message.from_user.id,
-            username   = message.from_user.username,
-            first_name = message.from_user.first_name or "",
+            channel_id=channel_id,
+            post_id=post_id,
+            user_id=message.from_user.id,
+            username=message.from_user.username,
+            first_name=message.from_user.first_name or "",
         )
         logger.debug(
             f"Сохранён комментатор {message.from_user.id} "
@@ -112,8 +112,8 @@ async def get_random_commenter(channel: str, post_id: int):
         .select()
         .where(
             Comment.channel_id == channel_id,
-            Comment.post_id    == post_id,
-            )
+            Comment.post_id == post_id,
+        )
         .namedtuples()
     )
 

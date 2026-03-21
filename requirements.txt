@@ -5,7 +5,6 @@ fastapi~=0.135.1
 loguru~=0.7.3
 peewee~=4.0.2
 PyYAML~=6.0.2
-Telethon~=1.42.0
 uvicorn~=0.42.0
 starlette~=0.52.1
 pathlib~=1.0.1
