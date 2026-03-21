@@ -103,9 +103,11 @@ def get_privileged_users():
     """
     try:
         query = PrivilegedUsers.select(PrivilegedUsers.chat_id, PrivilegedUsers.user_id)
-        return {(row.chat_id, row.user_id) for row in query}
+        result = {(row.chat_id, row.user_id) for row in query}
+        logger.debug(f"get_privileged_users вернул: {result}")
+        return result
     except Exception as e:
-        print(f"Ошибка при получении привилегированных пользователей: {e}")
+        logger.exception(f"Ошибка при получении привилегированных пользователей: {e}")
         return set()
 
 

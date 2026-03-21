@@ -80,6 +80,8 @@
         const chat_title = document.getElementById("groups-select-privilage").value.trim();
         const user_id = document.getElementById("user-id-privilege").value.trim();
 
+        console.log("Отправка данных:", { chat_title, user_id });
+
         if (!chat_title || !user_id) {
             alert("Заполните все поля");
             return;
@@ -91,7 +93,9 @@
                 user_id: user_id,
             });
 
-            const response = await fetch("give-privileges", {
+            console.log("Тело запроса:", body.toString());
+
+            const response = await fetch("/give-privileges", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
@@ -99,7 +103,10 @@
                 body: body.toString(),
             });
 
+            console.log("Статус ответа:", response.status);
+
             const result = await response.json();
+            console.log("Ответ сервера:", result);
 
             if (result.success) {
                 alert(result.message || "Права успешно выданы");

@@ -64,10 +64,18 @@ async def unified_message_handler(message: Message) -> None:
         except DoesNotExist:
             pass
 
-        # Преобразуем в строку и убираем -100
-        normalized_chat_id = int(str(chat_id).replace("-100", ""))
         privileged_users = get_privileged_users()
         logger.debug(f"privileged_users: {privileged_users}")
+        
+        # Нормализуем chat_id для сравнения (убираем -100)
+        normalized_chat_id = int(str(chat_id).replace("-100", ""))
+        logger.debug(f"normalized_chat_id: {normalized_chat_id}, user_id: {user_id}")
+        logger.debug(f"Проверка: ({normalized_chat_id}, {user_id}) in privileged_users: {(normalized_chat_id, user_id) in privileged_users}")
+
+        # Пропускаем модерацию для привилегированных пользователей
+        if (normalized_chat_id, user_id) in privileged_users:
+            logger.debug(f"Пользователь {user_id} имеет привилегии в чате {chat_id}")
+            return
 
         if message.chat.type == "private":
             if message.text == "/start":
@@ -131,7 +139,7 @@ async def unified_message_handler(message: Message) -> None:
             return
 
         # Пропускаем модерацию для привилегированных пользователей
-        if (normalized_chat_id, user_id) in privileged_users:
+        if (chat_id, user_id) in privileged_users:
             return
 
         # Проверка на пересланное сообщение

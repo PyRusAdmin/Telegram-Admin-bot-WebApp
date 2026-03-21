@@ -353,7 +353,7 @@ async def write_bad_words(bad_word: str):
 
 
 @app.post("/give-privileges")
-async def chat_give_privilege(chat_title: str, user_id: str):
+async def chat_give_privilege(request: Request, chat_title: str = Form(None), user_id: str = Form(None)):
     """
     Запись в базу данных пользователей, которым разрешено писать в чате без ограничений
 
@@ -361,10 +361,20 @@ async def chat_give_privilege(chat_title: str, user_id: str):
     :param user_id: id пользователя
     """
     try:
+        # Логируем полученные данные
+        form_data = await request.form()
+        logger.info(f"Получены данные формы: {dict(form_data)}")
+        logger.info(f"chat_title: {chat_title}, user_id: {user_id}")
+
+        if not chat_title or not user_id:
+            logger.error(f"Отсутствуют обязательные поля: chat_title={chat_title}, user_id={user_id}")
+            return {"success": False, "error": "Отсутствуют обязательные поля"}
+
         logger.info(
             f"Выдача привилегий для пользователя {user_id} в чате '{chat_title}'"
         )
         group = Group.get(Group.chat_title == chat_title)
+        logger.info(f"Найдена группа: chat_id={group.chat_id}, chat_title={group.chat_title}")
         group_id = group.chat_id
 
         existing = (
@@ -381,6 +391,9 @@ async def chat_give_privilege(chat_title: str, user_id: str):
                 chat_id=group_id, user_id=int(user_id), chat_title=chat_title
             )
             privileges.save()
+            logger.info(f"Привилегии выданы: user_id={user_id}, chat_id={group_id}")
+        else:
+            logger.info(f"Привилегии уже существуют: user_id={user_id}, chat_id={group_id}")
 
         return {
             "success": True,
@@ -389,7 +402,7 @@ async def chat_give_privilege(chat_title: str, user_id: str):
 
     except Exception as e:
         logger.exception(f"Ошибка при выдаче привилегий: {e}")
-        return {"success": False, "error": "Внутренняя ошибка сервера"}
+        return {"success": False, "error": str(e)}
 
 
 @app.get("/get-chat-id")
