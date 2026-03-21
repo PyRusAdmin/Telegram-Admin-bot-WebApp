@@ -78,5 +78,10 @@ async def delete_system_message_member_left(message: Message):
     """
     Обработчик удаления системного сообщения о выходе участника из группы.
     """
-    await message.delete()
-    logger.info("Удаляем системное сообщение")
+    try:
+        await message.delete()
+        logger.info("Удаляем системное сообщение")
+    except TelegramBadRequest as e:
+        logger.warning(e)
+    except Exception as e:
+        logger.exception(e)

@@ -56,7 +56,6 @@
         populateSelect(`/chat_title?user_id=${user_id}`, "groups-select-privilage");
     });
 
-    // Функция заполнения выпадающего списка групп
     async function populateSelect(url, selectId) {
         try {
             const response = await fetch(url);
@@ -65,10 +64,10 @@
             const select = document.getElementById(selectId);
             if (!select) return;
 
-            data.groups.forEach((group) => {
+            data.chat_title.forEach((group) => {
                 const option = document.createElement("option");
-                option.value = group;
-                option.textContent = group;
+                option.value = group.chat_title;
+                option.textContent = group.chat_title;
                 select.appendChild(option);
             });
         } catch (error) {

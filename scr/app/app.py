@@ -35,6 +35,7 @@ def get_bot():
         raise RuntimeError("Бот не инициализирован")
     return _bot
 
+
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -352,7 +353,7 @@ async def write_bad_words(bad_word: str):
 
 
 @app.post("/give-privileges")
-async def chat_give_privilege(chat_title: str, user_id: int):
+async def chat_give_privilege(chat_title: str, user_id: str):
     """
     Запись в базу данных пользователей, которым разрешено писать в чате без ограничений
 
@@ -363,7 +364,6 @@ async def chat_give_privilege(chat_title: str, user_id: int):
         logger.info(
             f"Выдача привилегий для пользователя {user_id} в чате '{chat_title}'"
         )
-        # Получаем информацию о целевой группе (ту, которую хотим ограничить)
         group = Group.get(Group.chat_title == chat_title)
         group_id = group.chat_id
 
@@ -371,14 +371,14 @@ async def chat_give_privilege(chat_title: str, user_id: int):
             PrivilegedUsers.select()
             .where(
                 (PrivilegedUsers.chat_id == group_id)
-                & (PrivilegedUsers.user_id == user_id)
+                & (PrivilegedUsers.user_id == int(user_id))
             )
             .first()
         )
 
         if not existing:
             privileges = PrivilegedUsers(
-                chat_id=group_id, user_id=user_id, chat_title=chat_title
+                chat_id=group_id, user_id=int(user_id), chat_title=chat_title
             )
             privileges.save()
 
@@ -458,6 +458,7 @@ if __name__ == "__main__":
 
     # Настройка прокси через переменные окружения
     from scr.proxy.proxy import setup_proxy
+
     setup_proxy(USER, PASSWORD, IP, PORT)
 
     # Создаём сессию (прокси через переменные окружения)
