@@ -27,11 +27,15 @@ async def get_chat_completion(work: str) -> str:
         chat_completion = client.chat.completions.create(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
             messages=[
-                {"role": "system",
-                 "content": "Проанализируй текст и найди ключевые словосочетания. Обрати внимание, что мне не нужно писать "
-                            "много текста, мне нужен просто список словосочетаний без 1,2,3 и без лишнего текста. "
-                            "Нужно не более 5 ключевых словосочетаний"},
-                {"role": "user", "content": work},
+                {
+                    "role": "system",
+                    "content": "Проанализируй текст и найди ключевые словосочетания. "
+                               "Выведи ТОЛЬКО сам список — без нумерации, без тире, без маркеров, без лишнего текста. "
+                               "Каждое словосочетание на отдельной строке. Не более 5 словосочетаний.",
+                },
+                {
+                    "role": "user", "content": work
+                },
             ],
         )
         return chat_completion.choices[0].message.content
@@ -69,8 +73,15 @@ async def get_data_sort(work: str) -> str:
 
 
 def ai_text_to_list(text: str) -> list[str]:
-    """Преобразует многострочный текст в список строк."""
-    return [line.strip() for line in text.splitlines() if line.strip()]
+    result = []
+    for line in text.splitlines():
+        # убираем ведущие маркеры: "- ", "• ", "* ", "1. ", "1) "
+        line = re.sub(r"^[\s\-•*]+", "", line)
+        line = re.sub(r"^\d+[\.\)]\s*", "", line)
+        line = line.strip()
+        if line:
+            result.append(line)
+    return result
 
 
 @router.callback_query(lambda c: c.data == "analysis")
@@ -128,7 +139,7 @@ async def get_link_post_user(message: Message, state: FSMContext):
 
         channel, message_id = None, None
         if match_public:
-            channel = "@" + match_public.group(1)   # ← добавить @
+            channel = "@" + match_public.group(1)  # ← добавить @
             message_id = int(match_public.group(2))
         elif match_private:
             channel_id = int(match_private.group(1))
@@ -208,8 +219,36 @@ async def get_link_post_user(message: Message, state: FSMContext):
 
         combined_text = "\n\n".join(all_results)
         ai_answer = await get_data_sort(work=combined_text)
+
+        # Очищаем ответ от неподдерживаемых HTML-тегов Telegram
+        ai_answer = (
+            ai_answer.replace("<h2>", "<b>")
+            .replace("</h2>", "</b>")
+            .replace("<h1>", "<b>")
+            .replace("</h1>", "</b>")
+            .replace("<h3>", "<b>")
+            .replace("</h3>", "</b>")
+            .replace("<p>", "")
+            .replace("</p>", "\n")
+            .replace("<ul>", "")
+            .replace("</ul>", "")
+            .replace("<li>", "• ")
+            .replace("</li>", "\n")
+            .replace("<br>", "\n")
+            .replace("<br/>", "\n")
+            .replace("<br />", "\n")
+        )
+
         await message.answer(f"🧠 <b>Общий анализ:</b>\n{ai_answer}", parse_mode=ParseMode.HTML)
 
+    except TelegramBadRequest as e:
+        error_msg = str(e).lower()
+        if "parse entities" in error_msg or "can't parse" in error_msg:
+            # Отправляем без HTML, если не удалось распарсить
+            await message.answer(f"🧠 Общий анализ:\n{ai_answer}")
+        else:
+            logger.error(f"Ошибка Telegram: {e}")
+            await message.answer("⚠️ Ошибка при отправке ответа.")
     except Exception as e:
         logger.exception(e)
         await message.answer("⚠️ Произошла ошибка при анализе поста.")
