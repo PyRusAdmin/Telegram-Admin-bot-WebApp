@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import os
 from pathlib import Path
 
@@ -471,8 +472,10 @@ async def chat_subscribe(chat_title: str, required_chat_title: str):
         return {"success": False, "error": str(e)}
 
 
-if __name__ == "__main__":
-    # Инициализируем бота для работы API
+def init_bot_and_run():
+    """Инициализация бота с SOCKS5 прокси и запуск приложения"""
+    import asyncio
+
     from aiogram import Bot
     from aiogram.client.default import DefaultBotProperties
     from aiogram.client.session.aiohttp import AiohttpSession
@@ -485,15 +488,21 @@ if __name__ == "__main__":
     IP = os.getenv('IP')
     PORT = os.getenv('PORT')
 
-    # Настройка прокси через переменные окружения
-    from scr.proxy.proxy import setup_proxy
-
-    setup_proxy(USER, PASSWORD, IP, PORT)
-
-    # Создаём сессию (прокси через переменные окружения)
-    session = AiohttpSession()
+    # Создаём сессию с SOCKS5 прокси
+    session = AiohttpSession(proxy=f"socks5://{USER}:{PASSWORD}@{IP}:{PORT}")
     bot = Bot(token=bot_token, default=DefaultBotProperties(), session=session)
 
     set_bot(bot)
 
+    # Устанавливаем бота в модули, которые используют его
+    from scr.bot.handlers import choose_winner as choose_winner_module
+    from scr.utils import get_id as get_id_module
+    choose_winner_module.set_bot(bot)
+    get_id_module.set_bot(bot)
+
     uvicorn.run("app:app", host="127.0.0.1", port=8080, reload=True)
+
+
+if __name__ == "__main__":
+    # Инициализируем бота для работы API
+    asyncio.run(init_bot_and_run())

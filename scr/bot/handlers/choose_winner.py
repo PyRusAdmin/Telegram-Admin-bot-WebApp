@@ -8,11 +8,27 @@ from aiogram.types import CallbackQuery
 from aiogram.types import Message
 from loguru import logger
 from aiogram import Router
-from scr.bot.system.dispatcher import bot
 from peewee import Model, SqliteDatabase, IntegerField, CharField, DateTimeField, IntegrityError
 from datetime import datetime
 
 db = SqliteDatabase("comments.db")
+
+
+# Глобальная переменная для бота (устанавливается извне)
+_bot = None
+
+
+def set_bot(bot):
+    """Установка бота"""
+    global _bot
+    _bot = bot
+
+
+def get_bot():
+    """Получение бота"""
+    if _bot is None:
+        raise RuntimeError("Бот не инициализирован")
+    return _bot
 
 
 class BaseModel(Model):
@@ -95,6 +111,7 @@ async def get_random_commenter(channel: str, post_id: int):
     """
     # Получаем числовой ID канала через Bot API
     try:
+        bot = get_bot()
         chat = await bot.get_chat(chat_id=channel if channel.startswith("@") else f"@{channel}")
         channel_id = chat.id
         logger.info(f"Канал: {chat.title}, ID: {channel_id}")

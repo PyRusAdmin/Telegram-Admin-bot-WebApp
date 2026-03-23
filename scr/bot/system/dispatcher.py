@@ -32,12 +32,17 @@ FULL_ACCESS = ChatPermissions(can_send_messages=True)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
-session = AiohttpSession(
-    proxy=f"http://{USER}:{PASSWORD}@{IP}:{PORT}"
-)
 
-bot = Bot(
-    token=bot_token_2,
-    default=DefaultBotProperties(),
-    session=session
-)
+def create_bot():
+    """Создание бота с SOCKS5 прокси"""
+    # Используем SOCKS5 прокси через URL
+    session = AiohttpSession(proxy=f"socks5://{USER}:{PASSWORD}@{IP}:{PORT}")
+    
+    return Bot(
+        token=bot_token_2,
+        default=DefaultBotProperties(),
+        session=session
+    )
+
+
+bot = None

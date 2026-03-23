@@ -11,13 +11,23 @@ from scr.bot.handlers.analysis import router as analysis
 from scr.bot.handlers.analysis_number_participants import router as analysis_number_participants
 from scr.bot.handlers.choose_winner import router as choose_winner
 from scr.bot.handlers.member import router as member
-from scr.bot.system.dispatcher import dp, bot
+from scr.bot.system.dispatcher import dp, bot, create_bot
 
 
 async def main():
     """
     Главная асинхронная функция для запуска бота.
     """
+    global bot
+    if bot is None:
+        bot = create_bot()
+    
+    # Устанавливаем бота в модули, которые используют его
+    from scr.bot.handlers import choose_winner as choose_winner_module
+    from scr.utils import get_id as get_id_module
+    choose_winner_module.set_bot(bot)
+    get_id_module.set_bot(bot)
+
     try:
         logger.info("Бот запущен")
         dp.include_router(admin)
