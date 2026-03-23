@@ -12,7 +12,7 @@ from loguru import logger
 
 from scr.YandexWordstatPy.yandex_wordstat_py import yandex_wordstat_py
 from scr.bot.states.states import AnalysisState
-from scr.bot.system.dispatcher import GROQ_KEY, OAuth, USER, PASSWORD, IP, PORT
+from scr.config import GROQ_KEY, OAuth, USER, PASSWORD, IP, PORT
 from scr.proxy.proxy import setup_proxy
 
 router = Router(name=__name__)

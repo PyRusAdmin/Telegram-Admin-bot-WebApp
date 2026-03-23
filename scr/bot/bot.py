@@ -4,14 +4,14 @@ import asyncio
 from aiogram.exceptions import TelegramNetworkError
 from loguru import logger
 
-from scr.bot.handlers.message_moderation_handler import router as moderation_router
-from scr.bot.handlers.message_moderation import router as message_moderation
 from scr.bot.handlers.admin import router as admin
 from scr.bot.handlers.analysis import router as analysis
 from scr.bot.handlers.analysis_number_participants import router as analysis_number_participants
 from scr.bot.handlers.choose_winner import router as choose_winner
 from scr.bot.handlers.member import router as member
-from scr.bot.system.dispatcher import dp, bot, create_bot
+from scr.bot.handlers.message_moderation import router as message_moderation
+from scr.bot.handlers.message_moderation_handler import router as moderation_router
+from scr.bot.system.dispatcher import dp, create_bot
 
 
 async def main():
@@ -21,7 +21,7 @@ async def main():
     global bot
     if bot is None:
         bot = create_bot()
-    
+
     # Устанавливаем бота в модули, которые используют его
     from scr.bot.handlers import choose_winner as choose_winner_module
     from scr.utils import get_id as get_id_module

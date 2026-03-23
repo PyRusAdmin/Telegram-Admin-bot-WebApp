@@ -13,7 +13,6 @@ from datetime import datetime
 
 db = SqliteDatabase("comments.db")
 
-
 # Глобальная переменная для бота (устанавливается извне)
 _bot = None
 

@@ -10,7 +10,7 @@ from peewee import DoesNotExist
 
 from scr.bot.keyboard.keyboard import create_admin_panel_keyboard
 from scr.bot.messages.translations_loader import translations
-from scr.bot.system.dispatcher import time_del
+from scr.config import time_del
 from scr.utils.models import BadWords, get_privileged_users, save_bot_user, BannedUser, log_spam
 from scr.utils.models import GroupRestrictions
 

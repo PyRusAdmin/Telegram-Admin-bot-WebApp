@@ -474,7 +474,6 @@ async def chat_subscribe(chat_title: str, required_chat_title: str):
 
 def init_bot_and_run():
     """Инициализация бота с SOCKS5 прокси и запуск приложения"""
-    import asyncio
 
     from aiogram import Bot
     from aiogram.client.default import DefaultBotProperties
@@ -482,11 +481,7 @@ def init_bot_and_run():
     from dotenv import load_dotenv
 
     load_dotenv()
-    bot_token = os.getenv('BOT_TOKEN_2')
-    USER = os.getenv('USER')
-    PASSWORD = os.getenv('PASSWORD')
-    IP = os.getenv('IP')
-    PORT = os.getenv('PORT')
+
 
     # Создаём сессию с SOCKS5 прокси
     session = AiohttpSession(proxy=f"socks5://{USER}:{PASSWORD}@{IP}:{PORT}")
