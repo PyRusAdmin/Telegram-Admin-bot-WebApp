@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import asyncio
 
-from aiogram.client import bot
 from aiogram.exceptions import TelegramNetworkError
 from loguru import logger
 
@@ -12,7 +11,7 @@ from scr.bot.handlers.choose_winner import router as choose_winner
 from scr.bot.handlers.member import router as member
 from scr.bot.handlers.message_moderation import router as message_moderation
 from scr.bot.handlers.message_moderation_handler import router as moderation_router
-from scr.bot.system.dispatcher import dp
+from scr.bot.system.dispatcher import dp, bot
 
 
 async def main():

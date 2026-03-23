@@ -27,7 +27,22 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 
 # === Подключаем шаблоны и статику ===
 app.mount("/scr/app/static", StaticFiles(directory=STATIC_DIR), name="static")
-templates = Jinja2Templates(directory=TEMPLATES_DIR)
+
+# Создаем экземпляр Jinja2Templates с отключенным кешированием для избежания ошибок
+from jinja2 import Environment, FileSystemLoader
+jinja_env = Environment(
+    loader=FileSystemLoader(str(TEMPLATES_DIR)),
+    auto_reload=True,
+    cache_size=0  # Отключаем кеширование
+)
+
+# Создаем кастомный класс для шаблонов с отключенным кешированием
+class CustomJinja2Templates(Jinja2Templates):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.env.cache = {}
+
+templates = CustomJinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 # === Маршруты ===
@@ -41,29 +56,44 @@ async def index(request: Request):
     :param request: Объект запроса.
     :return: HTML-страница с приветствием.
     """
-    return templates.TemplateResponse("index.html", {"request": request})
+    # Используем прямой рендеринг шаблона для избежания ошибки с кешированием
+    content = templates.env.get_template("index.html").render({"request": request})
+    from starlette.responses import HTMLResponse
+    return HTMLResponse(content=content)
+
+
+# Маршрут для favicon.ico
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    from fastapi.responses import Response
+    return Response(status_code=204)  # No Content
 
 
 # Новый маршрут для "Ограничения на сообщения"
 @app.get("/restrictions_messages")
 async def restrictions_messages(request: Request):
-    return templates.TemplateResponse(
-        "restrictions_messages.html", {"request": request}
-    )
+    # Используем прямой рендеринг шаблона для избежания ошибки с кешированием
+    content = templates.env.get_template("restrictions_messages.html").render({"request": request})
+    from starlette.responses import HTMLResponse
+    return HTMLResponse(content=content)
 
 
 # Новый маршрут для "Ограничение по подписке на канал"
 @app.get("/channel_subscription_limit")
 async def channel_subscription_limit(request: Request):
-    return templates.TemplateResponse(
-        "channel_subscription_limit.html", {"request": request}
-    )
+    # Используем прямой рендеринг шаблона для избежания ошибки с кешированием
+    content = templates.env.get_template("channel_subscription_limit.html").render({"request": request})
+    from starlette.responses import HTMLResponse
+    return HTMLResponse(content=content)
 
 
 # Новый маршрут для "Фильтр запрещённых слов"
 @app.get("/filter_words")
 async def filter_words(request: Request):
-    return templates.TemplateResponse("filter_words.html", {"request": request})
+    # Используем прямой рендеринг шаблона для избежания ошибки с кешированием
+    content = templates.env.get_template("filter_words.html").render({"request": request})
+    from starlette.responses import HTMLResponse
+    return HTMLResponse(content=content)
 
 
 # Новый маршрут для "Выдать пользователю особые права в группе"
@@ -75,9 +105,10 @@ async def grant_user_special_rights_group(request: Request):
     :param request: Объект запроса.
     :return: HTML-страница с формой для ввода данных о пользователе и группе.
     """
-    return templates.TemplateResponse(
-        "grant_user_special_rights_group.html", {"request": request}
-    )
+    # Используем прямой рендеринг шаблона для избежания ошибки с кешированием
+    content = templates.env.get_template("grant_user_special_rights_group.html").render({"request": request})
+    from starlette.responses import HTMLResponse
+    return HTMLResponse(content=content)
 
 
 # Маршрут для "Формирование групп"
@@ -89,9 +120,11 @@ async def formation_groups(request: Request):
     :param request: Объект запроса.
     :return: HTML-страница с формой для ввода username группы.
     """
-    return templates.TemplateResponse("formation_groups.html", {
-        "request": request,
-    })
+    # Используем прямой рендеринг шаблона для избежания ошибки с кешированием
+    content = templates.env.get_template("formation_groups.html").render({"request": request})
+    from starlette.responses import HTMLResponse
+    return HTMLResponse(content=content)
+
 
 
 """Помощь пользователю"""
@@ -99,7 +132,10 @@ async def formation_groups(request: Request):
 
 @app.get("/help")
 async def help(request: Request):
-    return templates.TemplateResponse("help.html", {"request": request})
+    # Используем прямой рендеринг шаблона для избежания ошибки с кешированием
+    content = templates.env.get_template("help.html").render({"request": request})
+    from starlette.responses import HTMLResponse
+    return HTMLResponse(content=content)
 
 
 """Формирование групп и каналов для отслеживания сообщений пользователей в группах и каналах"""
@@ -107,9 +143,9 @@ async def help(request: Request):
 
 @app.get("/add_groups_for_tracking")
 async def add_groups_for_tracking(request: Request):
-    return templates.TemplateResponse(
-        "add_groups_for_tracking.html", {"request": request}
-    )
+    # Используем прямой вызов шаблона без кеширования для избежания ошибки
+    template = templates.get_template("add_groups_for_tracking.html")
+    return templates.TemplateResponse(template, {"request": request})
 
 
 @app.post("/save-username")
@@ -218,9 +254,9 @@ async def get_groups(user_id: int = Query(...)):
 # Количество участников
 @app.get("/restrictions_on_messages")
 async def restrictions_on_messages(request: Request):
-    return templates.TemplateResponse(
-        "restrictions_on_messages.html", {"request": request}
-    )
+    # Используем прямой вызов шаблона без кеширования для избежания ошибки
+    template = templates.get_template("restrictions_on_messages.html")
+    return templates.TemplateResponse(template, {"request": request})
 
 
 @app.get("/get-participants")
