@@ -16,3 +16,4 @@ Jinja2~=3.1.6
 python-multipart~=0.0.22
 aiohttp-socks~=0.11.0
 pytest
+pytest-asyncio
