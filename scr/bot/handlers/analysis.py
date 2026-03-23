@@ -12,7 +12,7 @@ from loguru import logger
 
 from scr.YandexWordstatPy.yandex_wordstat_py import yandex_wordstat_py
 from scr.bot.states.states import AnalysisState
-from scr.config import GROQ_KEY, OAuth, USER, PASSWORD, IP, PORT
+from scr.config import GROQ_KEY, OAuth, USER, PASSWORD_PROXY, IP_PROXY, PORT_PROXY
 from scr.proxy.proxy import setup_proxy
 
 router = Router(name=__name__)
@@ -21,7 +21,7 @@ router = Router(name=__name__)
 async def get_chat_completion(work: str) -> str:
     """Возвращает ключевые слова из текста поста через ИИ"""
     try:
-        setup_proxy(USER, PASSWORD, IP, PORT)
+        setup_proxy(USER, PASSWORD_PROXY, IP_PROXY, PORT_PROXY)
 
         client = Groq(api_key=GROQ_KEY)
         chat_completion = client.chat.completions.create(
@@ -47,7 +47,7 @@ async def get_chat_completion(work: str) -> str:
 async def get_data_sort(work: str) -> str:
     """Делает общий акализ текста с помощью ИИ"""
     try:
-        setup_proxy(USER, PASSWORD, IP, PORT)
+        setup_proxy(USER, PASSWORD_PROXY, IP_PROXY, PORT_PROXY)
 
         client = Groq(api_key=GROQ_KEY)
         chat_completion = client.chat.completions.create(

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
 
+from aiogram.client import bot
 from aiogram.exceptions import TelegramNetworkError
 from loguru import logger
 
@@ -11,22 +12,14 @@ from scr.bot.handlers.choose_winner import router as choose_winner
 from scr.bot.handlers.member import router as member
 from scr.bot.handlers.message_moderation import router as message_moderation
 from scr.bot.handlers.message_moderation_handler import router as moderation_router
-from scr.bot.system.dispatcher import dp, create_bot
+from scr.bot.system.dispatcher import dp
 
 
 async def main():
     """
     Главная асинхронная функция для запуска бота.
     """
-    global bot
-    if bot is None:
-        bot = create_bot()
-
     # Устанавливаем бота в модули, которые используют его
-    from scr.bot.handlers import choose_winner as choose_winner_module
-    from scr.utils import get_id as get_id_module
-    choose_winner_module.set_bot(bot)
-    get_id_module.set_bot(bot)
 
     try:
         logger.info("Бот запущен")

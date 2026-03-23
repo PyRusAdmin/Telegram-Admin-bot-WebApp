@@ -10,7 +10,7 @@ from peewee import DoesNotExist
 
 from scr.bot.keyboard.keyboard import create_admin_panel_keyboard
 from scr.bot.messages.translations_loader import translations
-from scr.config import time_del
+from scr.config import TIME_DEL
 from scr.utils.models import BadWords, get_privileged_users, save_bot_user, BannedUser, log_spam
 from scr.utils.models import GroupRestrictions
 
@@ -151,7 +151,7 @@ async def unified_message_handler(message: Message) -> None:
                     translations["ru"]["message_moderation"]["moderation_forward_message"],
                     parse_mode="HTML",
                 )
-                await asyncio.sleep(int(time_del))
+                await asyncio.sleep(int(TIME_DEL))
                 await warning.delete()
                 return
             except TelegramBadRequest as e:
@@ -170,7 +170,7 @@ async def unified_message_handler(message: Message) -> None:
                         translations["ru"]["message_moderation"]["moderation_bad_words"],
                         parse_mode="HTML",
                     )
-                    await asyncio.sleep(int(time_del))
+                    await asyncio.sleep(int(TIME_DEL))
                     await warning.delete()
                     return
 
@@ -186,7 +186,7 @@ async def unified_message_handler(message: Message) -> None:
                         translations["ru"]["message_moderation"]["moderation_url_message"],
                         parse_mode="HTML",
                     )
-                    await asyncio.sleep(int(time_del))
+                    await asyncio.sleep(int(TIME_DEL))
                     await warning.delete()
                     return
     except Exception as e:

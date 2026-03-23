@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import asyncio
-import os
 from pathlib import Path
 
 import uvicorn
@@ -15,28 +14,12 @@ from loguru import logger
 from starlette.responses import JSONResponse
 
 from scr.bot.system.dispatcher import READ_ONLY, FULL_ACCESS
-from scr.utils.get_id import get_participants_count
-from scr.utils.models import BadWords, PrivilegedUsers, Groups
-from scr.utils.models import Group, db
-from scr.utils.models import GroupRestrictions
+from scr.config import USER, PASSWORD_PROXY, IP_PROXY, PORT_PROXY
+from scr.proxy.proxy import setup_proxy
+from scr.utils.get_id import get_participants_count, get_bot
+from scr.utils.models import BadWords, PrivilegedUsers, Groups, Group, db, GroupRestrictions
 
 # Глобальная переменная для бота (устанавливается при запуске)
-_bot = None
-
-
-def set_bot(bot):
-    """Установка бота для FastAPI приложения"""
-    global _bot
-    _bot = bot
-
-
-def get_bot():
-    """Получение бота"""
-    if _bot is None:
-        raise RuntimeError("Бот не инициализирован")
-    return _bot
-
-
 app = FastAPI()
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -474,27 +457,7 @@ async def chat_subscribe(chat_title: str, required_chat_title: str):
 
 def init_bot_and_run():
     """Инициализация бота с SOCKS5 прокси и запуск приложения"""
-
-    from aiogram import Bot
-    from aiogram.client.default import DefaultBotProperties
-    from aiogram.client.session.aiohttp import AiohttpSession
-    from dotenv import load_dotenv
-
-    load_dotenv()
-
-
-    # Создаём сессию с SOCKS5 прокси
-    session = AiohttpSession(proxy=f"socks5://{USER}:{PASSWORD}@{IP}:{PORT}")
-    bot = Bot(token=bot_token, default=DefaultBotProperties(), session=session)
-
-    set_bot(bot)
-
-    # Устанавливаем бота в модули, которые используют его
-    from scr.bot.handlers import choose_winner as choose_winner_module
-    from scr.utils import get_id as get_id_module
-    choose_winner_module.set_bot(bot)
-    get_id_module.set_bot(bot)
-
+    setup_proxy(USER, PASSWORD_PROXY, IP_PROXY, PORT_PROXY)
     uvicorn.run("app:app", host="127.0.0.1", port=8080, reload=True)
 
 
