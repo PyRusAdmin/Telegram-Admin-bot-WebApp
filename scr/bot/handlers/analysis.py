@@ -12,7 +12,7 @@ from loguru import logger
 
 from scr.YandexWordstatPy.yandex_wordstat_py import yandex_wordstat_py
 from scr.bot.states.states import AnalysisState
-from scr.config import GROQ_KEY, OAuth, USER, PASSWORD_PROXY, IP_PROXY, PORT_PROXY
+from scr.config import GROQ_KEY, OAUTH, PASSWORD_PROXY, IP_PROXY, PORT_PROXY, USER_PROXY
 from scr.proxy.proxy import setup_proxy
 
 router = Router(name=__name__)
@@ -21,7 +21,7 @@ router = Router(name=__name__)
 async def get_chat_completion(work: str) -> str:
     """Возвращает ключевые слова из текста поста через ИИ"""
     try:
-        setup_proxy(USER, PASSWORD_PROXY, IP_PROXY, PORT_PROXY)
+        setup_proxy(USER_PROXY, PASSWORD_PROXY, IP_PROXY, PORT_PROXY)
 
         client = Groq(api_key=GROQ_KEY)
         chat_completion = client.chat.completions.create(
@@ -213,7 +213,7 @@ async def get_link_post_user(message: Message, state: FSMContext):
         all_results = []
         for keyword in keywords:
             await message.answer(f"🔎 Анализирую запрос в Wordstat: «{keyword}»...")
-            data = yandex_wordstat_py(keyword, OAuth)
+            data = yandex_wordstat_py(keyword, OAUTH)
             all_results.append(data)
             await message.answer(f"📊 Данные по «{keyword}»:\n{data}")
 

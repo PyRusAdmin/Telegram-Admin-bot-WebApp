@@ -13,10 +13,10 @@ from fastapi.templating import Jinja2Templates
 from loguru import logger
 from starlette.responses import JSONResponse
 
-from scr.bot.system.dispatcher import READ_ONLY, FULL_ACCESS
-from scr.config import USER, PASSWORD_PROXY, IP_PROXY, PORT_PROXY
+from scr.bot.system.dispatcher import READ_ONLY, FULL_ACCESS, bot
+from scr.config import PASSWORD_PROXY, IP_PROXY, PORT_PROXY, USER_PROXY
 from scr.proxy.proxy import setup_proxy
-from scr.utils.get_id import get_participants_count, get_bot
+from scr.utils.get_id import get_participants_count
 from scr.utils.models import BadWords, PrivilegedUsers, Groups, Group, db, GroupRestrictions
 
 # Глобальная переменная для бота (устанавливается при запуске)
@@ -315,7 +315,7 @@ async def chat_readonly(chat_id: int):
     """
     try:
         chat_id = str(f"-100{chat_id}")
-        await get_bot().set_chat_permissions(chat_id=int(chat_id), permissions=READ_ONLY)
+        await bot.set_chat_permissions(chat_id=int(chat_id), permissions=READ_ONLY)
         return {"success": True, "message": "Чат переведён в режим «только чтение»"}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -331,7 +331,7 @@ async def chat_writeable(chat_id: int):
     """
     try:
         chat_id = str(f"-100{chat_id}")
-        await get_bot().set_chat_permissions(chat_id=chat_id, permissions=FULL_ACCESS)
+        await bot.set_chat_permissions(chat_id=chat_id, permissions=FULL_ACCESS)
         return {"success": True, "message": "Чат переведён в режим «все могут писать»"}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -455,9 +455,9 @@ async def chat_subscribe(chat_title: str, required_chat_title: str):
         return {"success": False, "error": str(e)}
 
 
-def init_bot_and_run():
+async def init_bot_and_run():
     """Инициализация бота с SOCKS5 прокси и запуск приложения"""
-    setup_proxy(USER, PASSWORD_PROXY, IP_PROXY, PORT_PROXY)
+    setup_proxy(USER_PROXY, PASSWORD_PROXY, IP_PROXY, PORT_PROXY)
     uvicorn.run("app:app", host="127.0.0.1", port=8080, reload=True)
 
 
