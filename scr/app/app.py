@@ -477,7 +477,7 @@ async def chat_subscribe(chat_title: str, required_chat_title: str):
 async def init_bot_and_run():
     """Инициализация бота с SOCKS5 прокси и запуск приложения"""
     setup_proxy(USER_PROXY, PASSWORD_PROXY, IP_PROXY, PORT_PROXY)
-    uvicorn.run("app:app", host="127.0.0.1", port=8080, reload=True)
+    uvicorn.run("app:app", host="127.0.0.1", port=3000, reload=True)
 
 
 if __name__ == "__main__":
