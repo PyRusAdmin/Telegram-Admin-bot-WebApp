@@ -16,7 +16,7 @@ from starlette.responses import JSONResponse
 from scr.bot.system.dispatcher import READ_ONLY, FULL_ACCESS, bot
 from scr.config import PASSWORD_PROXY, IP_PROXY, PORT_PROXY, USER_PROXY
 from scr.proxy.proxy import setup_proxy
-from scr.utils.get_id import get_participants_count
+from scr.utils.get_id import get_participants_count, get_chat_info_by_id
 from scr.utils.models import BadWords, PrivilegedUsers, Groups, Group, db, GroupRestrictions
 
 # Глобальная переменная для бота (устанавливается при запуске)
@@ -185,20 +185,22 @@ async def delete_group(chat_id: int = Form(...), user_id: int = Form(...)):  # <
 
 
 @app.post("/save-group")
-async def save_group(chat_username: str = Form(...), user_id: int = Form(...)):
+async def save_group(chat_id_input: str = Form(...), user_id: int = Form(...)):
     """
-    Запись данных в базу данных по username группы.
+    Запись данных в базу данных по ID группы.
+    Бот получает username автоматически (требуется статус администратора).
 
-    :param chat_username: Username группы.
+    :param chat_id_input: ID группы (например: -1001234567890 или 1234567890).
     :param user_id: ID пользователя, который добавляет группу.
     """
     try:
         # Удаляем пробелы по краям
-        chat_username = chat_username.strip()
+        chat_id_input = chat_id_input.strip()
 
-        logger.debug(f"Пользователь с ID: {user_id} добавляет группу с username: {chat_username}")
+        logger.debug(f"Пользователь с ID: {user_id} добавляет группу с ID: {chat_id_input}")
 
-        chat_id, chat_title, chat_total, chat_link = await get_participants_count(chat_username)
+        # Получаем информацию о чате по ID
+        chat_id, chat_title, chat_total, chat_link = await get_chat_info_by_id(chat_id_input)
         permission_to_write = "True"
         db.create_tables([Group], safe=True)
         with db.atomic():
@@ -210,10 +212,15 @@ async def save_group(chat_username: str = Form(...), user_id: int = Form(...)):
                 permission_to_write=permission_to_write,
                 user_id=user_id,
             ).execute()
+        logger.info(f"Группа добавлена: ID={chat_id}, Title={chat_title}, Link={chat_link}")
         return RedirectResponse(url="/formation-groups?success=1", status_code=303)
     except Exception as e:
-        logger.exception(e)
-        return RedirectResponse(url="/formation-groups?error=1", status_code=303)
+        error_msg = str(e)
+        logger.error(f"Ошибка при добавлении группы: {error_msg}")
+        # Кодируем ошибку для передачи в URL
+        from urllib.parse import quote
+        error_encoded = quote(error_msg[:100])  # Ограничиваем длину ошибки
+        return RedirectResponse(url=f"/formation-groups?error=1&msg={error_encoded}", status_code=303)
 
 
 # Получение списка групп для отображения на странице. Получение списка групп пользователя телеграмм бота

@@ -14,19 +14,22 @@
 
 <p>
     Это страница для формирования пользовательских групп.
-<hr class="my-8 h-px border-0 bg-gray-300"/> Для дальнейшего взаимодействия с группами, нужно задать @username группы.
+<hr class="my-8 h-px border-0 bg-gray-300"/> Для дальнейшего взаимодействия с группами, нужно указать ID группы. Бот автоматически получит username (требуется статус администратора бота в группе).
 </p>
 
 <!--
   Форма для ввода ID группы. Форма отправляет POST-запрос на /save-group
-  Поле <input> имеет атрибут name="chat_id"
-  Значение этого поля будет передано как chat_id=... в теле запроса
-  FastAPI ожидает поле с именем "chat_id" из формы (name="chat_id")
+  Поле <input> имеет атрибут name="chat_id_input"
+  Значение этого поля будет передано как chat_id_input=... в теле запроса
+  FastAPI ожидает поле с именем "chat_id_input" из формы (name="chat_id_input")
   -->
 
 <form action="/save-group" method="post" enctype="application/x-www-form-urlencoded">
-    <label for="chat-username">Введите username группы или канала в виде @username:</label>
-    <input type="text" id="chat-username" name="chat_username" placeholder="Например: @username"/>
+    <label for="chat-id">Введите ID группы или канала:</label>
+    <input type="text" id="chat-id" name="chat_id_input" placeholder="Например: -1001234567890"/>
+    <small style="display: block; margin-top: 5px; color: #666;">
+        ID можно получить через @getidsbot или @userinfobot. Для супергрупп и каналов ID начинается с -100
+    </small>
     <!-- Добавляем скрытое поле для передачи user_id -->
     <input type="hidden" name="user_id" id="user-id-field">
     <button type="submit">Сохранить группу</button>
